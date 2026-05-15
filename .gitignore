@@ -1,0 +1,25 @@
+# MATLAB / Simulink
+*.asv
+*.autosave
+*.slxc
+slprj/
+sccprj/
+*.mex*
+*.mat
+octave-workspace
+
+# Simulink autosaves and backups
+*.slx.r20*
+*.slx.bak
+*.slx.original
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*~
