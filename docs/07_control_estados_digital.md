@@ -30,8 +30,8 @@ Este truco entrega $\Phi$ y $\Gamma$ simultáneamente con un solo `expm`.
 
 ## 7.3 Controlabilidad y Observabilidad Discretas
 
-- **Controlabilidad:** $\mathcal{C} = [\Gamma\;\;\Phi\Gamma\;\;\Phi^2\Gamma\;\dots\;\Phi^{n-1}\Gamma]$, $\mathrm{rank} \cdot \mathcal{C}=n$.
-- **Observabilidad:** $\mathcal{O} = [C_d;\;C_d\Phi;\;\dots;\;C_d\Phi^{n-1}]$, $\mathrm{rank} \cdot \mathcal{O}=n$.
+- **Controlabilidad:** $\mathcal{C} = [\Gamma\;\;\Phi\Gamma\;\;\Phi^2\Gamma\;\dots\;\Phi^{n-1}\Gamma]$, $\mathrm{rank}\,\mathcal{C}=n$.
+- **Observabilidad:** $\mathcal{O} = [C_d;\;C_d\Phi;\;\dots;\;C_d\Phi^{n-1}]$, $\mathrm{rank}\,\mathcal{O}=n$.
 
 Si la planta continua es controlable/observable, en general lo es la discretizada (excepto en los llamados *pathological sampling rates* donde $T_s$ coincide con periodos de modos oscilatorios).
 

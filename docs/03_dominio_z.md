@@ -30,12 +30,12 @@ Propiedades clave:
 ### Transformadas elementales
 
 | Señal $x[k]$ ($k\ge 0$) | $X(z)$ | ROC |
-|--------------------------|--------|-----|
+| -------------------------- | -------- | ----- |
 | $\delta[k]$ | $1$ | todo $z$ |
-| $u[k]$ (escalón) | $\dfrac{z}{z-1}$ | $\|z\|>1$ |
-| $a^k \cdot u[k]$ | $\dfrac{z}{z-a}$ | $\|z\|>\|a\|$ |
-| $k \cdot u[k]$ | $\dfrac{z}{(z-1)^2}$ | $\|z\|>1$ |
-| $\sin(\omega_0 k) \cdot u[k]$ | $\dfrac{z\sin\omega_0}{z^2-2z\cos\omega_0+1}$ | $\|z\|>1$ |
+| $u[k]$ (escalón) | $\dfrac{z}{z-1}$ | $\lvert z\rvert>1$ |
+| $a^k \cdot u[k]$ | $\dfrac{z}{z-a}$ | $\lvert z\rvert>\lvert a\rvert$ |
+| $k \cdot u[k]$ | $\dfrac{z}{(z-1)^2}$ | $\lvert z\rvert>1$ |
+| $\sin(\omega_0 k) \cdot u[k]$ | $\dfrac{z\sin\omega_0}{z^2-2z\cos\omega_0+1}$ | $\lvert z\rvert>1$ |
 
 Repaso completo: [Repaso Z.pdf](../03_dominio_z/Repaso%20Z.pdf).
 
@@ -44,10 +44,10 @@ Repaso completo: [Repaso Z.pdf](../03_dominio_z/Repaso%20Z.pdf).
 Un sistema discreto LTI es estable **sí y solo si** todos los polos cumplen $|z_i| < 1$.
 
 | Región del plano s | Región mapeada en z |
-|--------------------|---------------------|
-| Semiplano izquierdo ($\sigma<0$) | Interior del círculo unitario ($\|z\|<1$) — ESTABLE |
-| Eje imaginario ($\sigma=0$) | Círculo unitario ($\|z\|=1$) — Marginal |
-| Semiplano derecho ($\sigma>0$) | Exterior del círculo ($\|z\|>1$) — INESTABLE |
+| -------------------- | --------------------- |
+| Semiplano izquierdo ($\sigma<0$) | Interior del círculo unitario ($\lvert z\rvert<1$) — ESTABLE |
+| Eje imaginario ($\sigma=0$) | Círculo unitario ($\lvert z\rvert=1$) — Marginal |
+| Semiplano derecho ($\sigma>0$) | Exterior del círculo ($\lvert z\rvert>1$) — INESTABLE |
 
 Demostración en script: [Z_Stability.m](../03_dominio_z/Z_Stability.m). Se utiliza un sistema de **ejemplo genérico** $G(z)=(z-0.5)/(z^2-1.5z+0.7)$ con $f_s=100\,\text{Hz}$ para ilustrar polos, ceros y respuesta en frecuencia digital — no es la planta del motor.
 
@@ -57,7 +57,7 @@ Con realimentación negativa unitaria:
 
 $$ H(z) = \frac{G(z)}{1 + G(z)} $$
 
-Cerrar el lazo **redibuja** los polos siguiendo el lugar geométrico de las raíces discreto (`rlocus` con `Ts ≠ 0`). En [Z_CloseLoop.m](../03_dominio_z/Z_CloseLoop.m) se compara la respuesta al escalón usando `stairs` (representación real de la salida del DAC) sobre el mismo $G(z)$ genérico.
+Cerrar el lazo **redibuja** los polos siguiendo el lugar geométrico de las raíces discreto (`rlocus` con `Ts ≠ 0`). En [Z_CloseLoop.m](../03_dominio_z/Z_CloseLoop.m) se compara la respuesta al escalón usando `stairs` (representación real de la salida del DAC) sobre el mismo $G(z)$ genérico, esta vez con $f_s = 1\,\text{kHz}$ ($T_s = 1\,\text{ms}$) para apreciar mejor la dinámica del lazo cerrado.
 
 ## 3.5 Aliasing y Periodicidad del Espectro
 

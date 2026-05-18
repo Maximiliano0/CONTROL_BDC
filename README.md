@@ -1,4 +1,4 @@
-# CONTROL_BDC
+﻿# CONTROL_BDC
 
 > Material didáctico del curso de **Control Discreto** (Ingeniería Electrónica) — usando un **Motor BDC (Brushed DC Motor)** como planta de referencia para integrar teoría y simulación.
 
@@ -85,7 +85,7 @@ CONTROL_BDC/
 ## Hoja de Ruta del Curso
 
 | Clase | Tema | Carpeta | Apunte |
-|------:|------|---------|--------|
+| ------: | ------ | --------- | -------- |
 | 1 | Modelado del motor BDC (2×2 velocidad) | [`01_modelado_motor_bdc/`](01_modelado_motor_bdc/) | [docs/01](docs/01_modelado_motor_bdc.md) |
 | 2 | Control por asignación de polos en continuo (3×3 posición) | [`02_control_espacio_estados/`](02_control_espacio_estados/) | [docs/02](docs/02_control_espacio_estados.md) |
 | 3 | Repaso transformada Z, muestreo y estabilidad | [`03_dominio_z/`](03_dominio_z/) | [docs/03](docs/03_dominio_z.md) |
@@ -105,7 +105,7 @@ CONTROL_BDC/
 - **Parámetros del motor real** usados en las secciones 05–09:
 
 | Símbolo | Descripción | Valor |
-|---------|-------------|-------|
+| --------- | ------------- | ------- |
 | $R_a$ | Resistencia de armadura | 11 Ω |
 | $L_a$ | Inductancia de armadura | 0.008 H |
 | $K_b = K$ | Constante FEM/torque | 0.0014 |

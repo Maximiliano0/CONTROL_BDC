@@ -10,14 +10,7 @@ Diseñar una ley de control por realimentación de estados $u = -K \cdot x + K_{
 
 Con $x = [i_a,\,\omega,\,\theta]^T$:
 
-$$
-A=\begin{bmatrix}-R_a/L_a & -K_b/L_a & 0\\ K_b/J_e & -B_e/J_e & 0\\ 0 & 1 & 0\end{bmatrix},
-\;
-B=\begin{bmatrix}1/L_a\\0\\0\end{bmatrix},
-\;
-C=\begin{bmatrix}0 & 0 & 1\end{bmatrix},
-\; D = 0
-$$
+$$ A = \begin{bmatrix}-R_a/L_a & -K_b/L_a & 0\\ K_b/J_e & -B_e/J_e & 0\\ 0 & 1 & 0\end{bmatrix}, \quad B = \begin{bmatrix}1/L_a\\ 0\\ 0\end{bmatrix}, \quad C = \begin{bmatrix}0 & 0 & 1\end{bmatrix}, \quad D = 0 $$
 
 En este capítulo se usan los parámetros didácticos: $R_a=0.5\,\Omega$, $L_a=0.5\,\text{H}$, $K_b=0.01$, $J_e=0.01\,\text{kg·m}^2$, $B_e=0.1\,\text{N·m·s}$.
 
@@ -36,13 +29,13 @@ El **tercer polo** (no dominante) se elige $s_3 = -10 \cdot \zeta\omega_n$ para 
 
 ## 2.4 Cálculo de la Ganancia $K$
 
-Si el par $(A, B)$ es **controlable** ($\mathrm{rank} \cdot \mathcal{C} = n$), existe $K$ tal que los autovalores de $A - BK$ coinciden con los polos deseados. Se usa `place(A,B,P)`.
+Si el par $(A, B)$ es **controlable** ($\mathrm{rank}\,\mathcal{C} = n$), existe $K$ tal que los autovalores de $A - BK$ coinciden con los polos deseados. Se usa `place(A,B,P)`.
 
 ### Verificación de controlabilidad
 
 $$ \mathcal{C} = [B\;\; AB\;\; A^2 B] \in \mathbb{R}^{3\times 3} $$
 
-Para el modelo 3×3 del motor BDC, $\mathrm{rank} \cdot \mathcal{C} = 3$ ⇒ todo polo es asignable. Esto es consecuencia física de que el voltaje $V_a$ excita la corriente, que produce torque, que mueve la velocidad y por tanto la posición.
+Para el modelo 3×3 del motor BDC, $\mathrm{rank}\,\mathcal{C} = 3$ ⇒ todo polo es asignable. Esto es consecuencia física de que el voltaje $V_a$ excita la corriente, que produce torque, que mueve la velocidad y por tanto la posición.
 
 ### Fórmula de Ackermann (alternativa cerrada)
 

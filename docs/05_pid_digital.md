@@ -76,7 +76,7 @@ $$ \zeta = 0.358,\quad \omega_n = 0.0336\,\text{rad/s},\quad \omega_c \approx 0.
 `pidtune` devuelve típicamente coeficientes del orden de:
 
 | Coef. | Valor aproximado | Comentario |
-|-------|------------------|------------|
+| ----- | ---------------- | ---------- |
 | $K_p$ | $\sim 10^{-2}$ | dominado por la enorme constante mecánica efectiva |
 | $K_i$ | $\sim 10^{-4}$ | acción integral muy lenta porque $t_p$ es grande |
 | $K_d$ | $\sim 10^{-1}$ | predicción moderada |

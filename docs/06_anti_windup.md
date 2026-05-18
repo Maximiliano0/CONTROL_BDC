@@ -35,7 +35,7 @@ Cuando no hay saturación, $u_{\text{sat}}=u_{\text{calc}}$ y el término extra 
 
 ### Derivación del valor de $K_{aw}$ por constante de tiempo de descarga
 
-Definiendo $\Delta u[k] = u_{\text{sat}}[k] - u_{\text{calc}}[k] \cdot \le 0$ durante saturación positiva, y suponiendo que durante un transitorio largo el integrador domina ($u \approx u_i$), la recurrencia se aproxima por una **descarga de primer orden** equivalente a la EDO
+Definiendo $\Delta u[k] = u_{\text{sat}}[k] - u_{\text{calc}}[k] \le 0$ durante saturación positiva, y suponiendo que durante un transitorio largo el integrador domina ($u \approx u_i$), la recurrencia se aproxima por una **descarga de primer orden** equivalente a la EDO
 
 $$ \dot u_i = -K_{aw} \cdot u_i + \text{(términos de error)}. $$
 

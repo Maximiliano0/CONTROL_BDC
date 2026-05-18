@@ -83,7 +83,7 @@ En régimen estacionario ($N \to \infty$, $P_k \to P$) se recupera exactamente l
 Para que el LQR tenga solución única y estabilizadora hace falta:
 
 | Condición | Significado |
-|-----------|-------------|
+| ----------- | ------------- |
 | $(\Phi, \Gamma)$ **estabilizable** | Todo modo inestable es controlable (si todo el sistema es controlable, se cumple). |
 | $(\Phi, \sqrt{Q})$ **detectable** | Todo modo inestable se "ve" a través de $Q$ (basta con $Q \succ 0$). |
 | $R \succ 0$ | El esfuerzo de control siempre se penaliza estrictamente. |
@@ -103,9 +103,9 @@ $$
 Para el motor BDC, valores razonables:
 
 | Variable | Valor máximo "tolerable" | Peso |
-|----------|--------------------------|------|
+| ---------- | -------------------------- | ------ |
 | $i_{a,\max}$ | 5 A | $1/25$ |
-| $\omega_{\max}$ | 200 rad/s | $1/40 \cdot 000$ |
+| $\omega_{\max}$ | 200 rad/s | $1/40{,}000$ |
 | $\theta_{\max}$ | $\sim 20°$ ($0.349$ rad) | $1/0.122$ |
 | $u_{\max}$ | 24 V | $1/576$ |
 
@@ -121,9 +121,9 @@ El LQR puro es un **regulador** ($r=0$). Para que el sistema siga una referencia
 
 1. **Pre-compensación $K_{dc}$** (estática):
 
- $$ K_{dc} = \frac{1}{C_d \cdot (I - (\Phi - \Gamma K))^{-1} \cdot \Gamma},\qquad u = -K \cdot x + K_{dc} \cdot r. $$
+   $$ K_{dc} = \frac{1}{C_d \cdot (I - (\Phi - \Gamma K))^{-1} \cdot \Gamma},\qquad u = -K \cdot x + K_{dc} \cdot r. $$
 
- Simple, pero sensible a errores de modelo y a perturbaciones constantes.
+   Simple, pero sensible a errores de modelo y a perturbaciones constantes.
 
 2. **LQR con acción integral** (LQI): se aumenta el estado con $x_i[k+1] = x_i[k] + (r - y[k])$ y se aplica LQR al sistema aumentado de orden $n+1$. Garantiza error cero en estado estacionario y rechazo de perturbaciones.
 
@@ -134,10 +134,10 @@ En este capítulo usamos la opción 1 para alinearnos con la metodología del ca
 ## 9.7 LQR vs. Pole-Placement
 
 | Aspecto | Pole-placement (cap. 07) | LQR (cap. 09) |
-|---------|--------------------------|----------------|
+| --------- | -------------------------- | ---------------- |
 | Especificación | Polos deseados | Pesos $Q$, $R$ |
 | Esfuerzo de control | No se considera explícitamente | Penalizado en $J$ |
-| Garantía de estabilidad | Sí, si los polos están en $\|z\|<1$ | Sí, automática |
+| Garantía de estabilidad | Sí, si los polos están en $\lvert z\rvert<1$ | Sí, automática |
 | Robustez | Variable | Margen de ganancia $[\tfrac{1}{2},\infty)$, margen de fase $\ge 60°$ (en continuo; en discreto se conservan propiedades similares con $T_s$ chico) |
 | Escalabilidad MIMO | Requiere `place` cuidadoso | `dlqr` resuelve directamente |
 
@@ -164,7 +164,7 @@ El costo computacional en línea es **idéntico** al pole-placement: 3 multiplic
 El script [lqr_bdc_z.m](../09_control_lqr/lqr_bdc_z.m) construye **cuatro** controladores sobre la misma planta:
 
 | Etiqueta | Configuración | Qué demuestra |
-|----------|---------------|---------------|
+| ---------- | --------------- | --------------- |
 | **A — baseline** | $Q, R$ por regla de Bryson | Punto de partida razonable |
 | **B — rápido** | $Q_{33}\times 100$ | Más prisa por $\theta$ → respuesta rápida, más voltaje |
 | **C — suave** | $R \times 100$ | Penaliza el voltaje → respuesta lenta, menos saturación |
@@ -193,7 +193,7 @@ Por consola se reportan $M_p$, $t_p$, $|u|_{\max}$ y $J_\infty$ de cada estrateg
 
 Con los parámetros del motor real, $T_s = 10\ \text{ms}$ y los topes de Bryson del script ($i_{a,\max}=5$ A, $\omega_{\max}=200$ rad/s, $\theta_{\max}=20° \approx 0.349$ rad, $u_{\max}=24$ V):
 
-$$ Q = \mathrm{diag}\bigl(1/25,\; 1/40 \cdot 000,\; 1/0.122\bigr),\qquad R = 1/576. $$
+$$ Q = \mathrm{diag}\bigl(1/25,\; 1/40{,}000,\; 1/0.122\bigr),\qquad R = 1/576. $$
 
 `dlqr` arroja un $K$ con **tercera componente dominante** (la penalización relativa sobre $\theta$ es la mayor de las tres en $Q$):
 
@@ -208,7 +208,7 @@ Una propiedad clásica del LQR continuo es **margen de ganancia infinito superio
 ### Comparación cuantitativa con los cuatro ajustes del script
 
 | Ajuste | $Q_{33}$ | $R$ | Comportamiento esperado |
-|--------|----------|-----|-------------------------|
+| -------- | ---------- | ----- | ------------------------- |
 | Bryson | $1/0.122$ | $1/576$ | Equilibrio referencia. |
 | Rápido ($Q_{33} \times 100$) | $100/0.122$ | $1/576$ | Sube agresivamente, riesgo de saturar. |
 | Suave ($R \times 100$) | $1/0.122$ | $100/576$ | Voltaje muy bajo, tiempo de subida largo. |

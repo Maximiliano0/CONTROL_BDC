@@ -30,7 +30,7 @@ con $\Phi = e^{A T_s}$, $\Gamma = \int_0^{T_s} e^{A\tau}d\tau \cdot B$, y $C_d =
 Antes de diseñar un observador hay que verificar que el sistema sea **observable**: que las mediciones $y[k]$ contengan suficiente información para reconstruir $x[k]$.
 
 $$
-\mathcal{O} = \begin{bmatrix} C_d \\ C_d \cdot \Phi \\ C_d \cdot \Phi^2 \\ \vdots \\ C_d \cdot \Phi^{n-1} \end{bmatrix},\qquad \mathrm{rank} \cdot \mathcal{O} = n
+\mathcal{O} = \begin{bmatrix} C_d \\ C_d \cdot \Phi \\ C_d \cdot \Phi^2 \\ \vdots \\ C_d \cdot \Phi^{n-1} \end{bmatrix},\qquad \mathrm{rank}\,\mathcal{O} = n
 $$
 
 En MATLAB: `rank(obsv(Phi,Cd)) == n`. Para el motor BDC el par $(\Phi, C_d)$ con $C_d=[0\;0\;1]$ es observable, lo cual tiene sentido físico: la posición integra a la velocidad, que a su vez es función de la corriente; viendo $\theta$ a lo largo del tiempo y conociendo $u[k]$ se puede inferir el resto.
@@ -106,7 +106,7 @@ Esto es el **Principio de Separación** (Separation Principle), uno de los resul
 ## 8.7 Variantes del Observador
 
 | Tipo | Ecuación de actualización | Característica |
-|------|---------------------------|----------------|
+| ---- | ------------------------- | -------------- |
 | **Predictor** (el implementado aquí) | $\hat{x}[k+1] = \Phi\hat{x}[k] + \Gamma u[k] + L(y[k] - C_d\hat{x}[k])$ | Usa $y[k]$ para predecir el estado **siguiente**. Introduce un retardo de 1 muestra. |
 | **Current Estimator** | $\bar{x}[k] = \Phi\hat{x}[k{-}1] + \Gamma u[k{-}1]$, $\hat{x}[k] = \bar{x}[k] + L(y[k] - C_d\bar{x}[k])$ | Usa $y[k]$ para corregir el estado del **instante actual** antes de calcular $u[k]$. Mejor desempeño con $T_s$ grandes. |
 | **Reducido** (Luenberger reducido) | Estima solo los estados **no medidos** | Menor orden ($n - p$) y menos cómputo, pero más sensible al ruido. |
@@ -151,8 +151,8 @@ El script [obs_control_z.m](../08_observador_estados/obs_control_z.m):
 2. Calcula $L$ con polos `factor_obs` veces más rápidos (por defecto **5×**).
 3. **Verifica el principio de separación** comparando $\mathrm{eig}(A_{\mathrm{aug}})$ con $P_{\mathrm{ctrl}} \cup P_{\mathrm{obs}}$.
 4. Simula **dos** sistemas en paralelo:
- - **Ideal:** $u = -K_z \cdot x$ (acceso al estado real, no realizable).
- - **Realista:** $u = -K_z \cdot \hat{x}$ con el observador corriendo en lazo.
+   - **Ideal:** $u = -K_z \cdot x$ (acceso al estado real, no realizable).
+   - **Realista:** $u = -K_z \cdot \hat{x}$ con el observador corriendo en lazo.
 5. Inicia el observador con un **error deliberado** en $\hat{\theta}$ para ver cómo converge.
 6. Grafica posición, esfuerzo de control, corriente real vs. estimada, velocidad real vs. estimada, errores de estimación y polos en el plano Z.
 
@@ -182,4 +182,4 @@ El script imprime `eig(Aaug)`; deben aparecer **6 autovalores** que coinciden (a
 
 ### Trade-off velocidad del observador vs. ruido
 
-Subir `factor_obs` (polos más rápidos) acelera la convergencia pero **amplifica el ruido de medición**: $L$ actúa como un filtro pasaalto sobre $y[k]$. Una regla de oro: la varianza del estimado escala como $\sim \|L\|^2 \cdot \sigma_y^2$. Para encoders ópticos de buena resolución, `factor_obs = 5`–10 es seguro. Con sensores ruidosos conviene preferir el filtro de Kalman (que optimiza este trade-off automáticamente).
+Subir `factor_obs` (polos más rápidos) acelera la convergencia pero **amplifica el ruido de medición**: $L$ actúa como un filtro pasaalto sobre $y[k]$. Una regla de oro: la varianza del estimado escala como $\sim \lVert L\rVert^2 \cdot \sigma_y^2$. Para encoders ópticos de buena resolución, `factor_obs = 5`–10 es seguro. Con sensores ruidosos conviene preferir el filtro de Kalman (que optimiza este trade-off automáticamente).

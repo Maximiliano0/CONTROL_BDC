@@ -8,7 +8,7 @@ El motor de corriente continua con escobillas (**Brushed DC Motor — BDC**) es 
 
 ### Subsistema Eléctrico (Ley de Kirchhoff de tensiones)
 
-$$ V_a(t) = R_a \cdot i_a(t) + L_a \cdot \frac{d \cdot i_a(t)}{dt} + e_b(t) $$
+$$ V_a(t) = R_a \cdot i_a(t) + L_a \cdot \frac{d\, i_a(t)}{dt} + e_b(t) $$
 
 donde la fuerza contraelectromotriz es proporcional a la velocidad angular:
 
@@ -16,7 +16,7 @@ $$ e_b(t) = K_b \cdot \omega(t) $$
 
 ### Subsistema Mecánico (Segunda ley de Newton para rotación)
 
-$$ J_e \cdot \frac{d \cdot \omega(t)}{dt} = T_m(t) - B_e \cdot \omega(t) - T_L(t) $$
+$$ J_e \cdot \frac{d\, \omega(t)}{dt} = T_m(t) - B_e \cdot \omega(t) - T_L(t) $$
 
 con torque electromagnético:
 
@@ -26,7 +26,7 @@ En unidades SI y motor ideal: $K_b = K$.
 
 ### Acople Posición — Velocidad
 
-$$ \frac{d \cdot \theta(t)}{dt} = \omega(t) $$
+$$ \frac{d\, \theta(t)}{dt} = \omega(t) $$
 
 ## 1.3 Función de Transferencia (Velocidad)
 
@@ -70,13 +70,7 @@ $$
 
 A partir del capítulo 02 se añade $x_3 = \theta$ con $\dot{x}_3 = x_2$ y se mide **posición angular**:
 
-$$
-A=\begin{bmatrix}-R_a/L_a & -K_b/L_a & 0\\ K_b/J_e & -B_e/J_e & 0\\ 0 & 1 & 0\end{bmatrix},
-\;
-B=\begin{bmatrix}1/L_a \\ 0 \\ 0\end{bmatrix},
-\;
-C=\begin{bmatrix}0 & 0 & 1\end{bmatrix}
-$$
+$$ A = \begin{bmatrix}-R_a/L_a & -K_b/L_a & 0\\ K_b/J_e & -B_e/J_e & 0\\ 0 & 1 & 0\end{bmatrix}, \quad B = \begin{bmatrix}1/L_a\\ 0\\ 0\end{bmatrix}, \quad C = \begin{bmatrix}0 & 0 & 1\end{bmatrix} $$
 
 > **Nota:** este modelo posee una **integradora pura** (de $\omega$ a $\theta$), por lo que el sistema es **Tipo 1** a lazo abierto.
 

@@ -1,59 +1,109 @@
-% Limpieza
-clc;
-clear;
-close all;
+%% =========================================================================
+% TRANSFORMACIÓN S → Z : Comparación de métodos de discretización
+% -------------------------------------------------------------------------
+% Propósito : Tomar un sistema continuo G(s) y obtener su equivalente
+%             discreto G(z) con dos métodos clásicos (ZOH e Impulse
+%             Invariant), comparar visualmente sus respuestas al escalón
+%             e impulso, y dejar el workspace listo para Simulink.
+%
+% FLUJO DE USO:
+%   1. Ejecutar este script  →  calcula G(s), G_z_zoh y G_z_imp.
+%   2. Abrir S2Z_1_Sim.slx   →  usa esas variables para mostrar el efecto
+%      del bloque ZOH (retención de orden cero) sobre la señal de control.
+%
+% Variables exportadas al workspace para S2Z_1_Sim.slx:
+%   Ts       – Periodo de muestreo [s]
+%   G_s      – FT continua (bloque de planta en Simulink)
+%   G_z_zoh  – G(z) discretizada con ZOH
+%   G_z_imp  – G(z) discretizada con Impulse Invariant
+% =========================================================================
 
-% Units and constants
-seg = 1;
+clc; clear; close all;
+
+%% 1. UNIDADES Y PARÁMETROS DE MUESTREO
+% Definimos escalas simbólicas para que los valores numéricos sean
+% legibles directamente con sus unidades físicas.
+seg  = 1;
 mseg = seg * (10^-3);
-Hz = 1/seg;
-kHz = Hz * (10^3);
+Hz   = 1/seg;
+kHz  = Hz * (10^3);
 
-%# System parameters
-Fs = 1 * kHz;  % Sampling frequency (1 kHz)
-Ts = 1/Fs;     % Sampling period
-N = 1024;
+Fs = 1 * kHz;   % Frecuencia de muestreo: 1 kHz  (muestreo muy rápido)
+Ts = 1/Fs;      % Periodo de muestreo: 1 ms
+N  = 1024;      % Reservado para análisis espectral (FFT)
 
-% Define the continuous-time transfer function
-s = tf('s');
-G_s = 1 / (2*s^2 + s + 5); % Example system
+%% 2. SISTEMA CONTINUO DE EJEMPLO
+% G(s) = 1 / (2s² + s + 5) — sistema genérico de 2do orden subamortiguado.
+% NO representa al motor BDC; su único propósito es ilustrar con claridad
+% las diferencias entre los métodos de discretización.
+s   = tf('s');
+G_s = 1 / (2*s^2 + s + 5);
 
-[Gn, Gd] = tfdata(G_s, 'v'); % 'v' returns them as row vectors
+% Extraemos coeficientes como vectores fila: útil para depuración o para
+% escribir manualmente la ecuación en diferencias en el microcontrolador.
+[Gn, Gd] = tfdata(G_s, 'v');
 
-% Convert using Zero-Order Hold (ZOH)
+%% 3. DISCRETIZACIÓN CON DOS MÉTODOS
+% c2d(G, Ts, método) convierte la FT continua al dominio discreto.
+
+% — ZOH (Zero-Order Hold) —
+%   Modela exactamente lo que hace el DAC de un microcontrolador: mantiene
+%   el valor de la señal de control constante entre instantes de muestreo.
+%   Es el método estándar en control digital embebido.
 G_z_zoh = c2d(G_s, Ts, 'zoh');
-[Gzn, Gzd] = tfdata(G_z_zoh, 'v');
 
-% Convert using Impulse Invariant method
+% — Impulse Invariant —
+%   Diseñado para igualar la respuesta al impulso muestreada del sistema
+%   continuo. Se usa más en procesamiento de señales que en control.
 G_z_imp = c2d(G_s, Ts, 'impulse');
 
-% Display the transfer functions
-display(G_s);
-display(G_z_zoh);
-display(G_z_imp);
+% Coeficientes de G_z_zoh como vectores fila: si se implementa la
+% ecuación en diferencias en C/C++, estos valores van directo al código.
+[Gzn, Gzd] = tfdata(G_z_zoh, 'v');
 
-% Plot pole-zero maps
+% Mostramos las tres representaciones en consola
+disp('--- G(s) continuo ---');      display(G_s);
+disp('--- G(z) ZOH ---');          display(G_z_zoh);
+disp('--- G(z) Impulse Inv. ---'); display(G_z_imp);
+
+%% 4. MAPAS DE POLOS Y CEROS EN EL PLANO Z
+% El círculo unitario es la frontera de estabilidad discreta:
+%   |z| < 1  →  polo estable  (respuesta decae en el tiempo)
+%   |z| > 1  →  polo inestable (respuesta crece indefinidamente)
+%   |z| = 1  →  límite (oscilación sostenida)
 figure;
 subplot(2,1,1);
 zplane(cell2mat(G_z_zoh.num), cell2mat(G_z_zoh.den));
 grid on;
-title('Pole-Zero Plot (ZOH Method)');
+title('Polos y Ceros en Z  –  Método ZOH');
 
 subplot(2,1,2);
 zplane(cell2mat(G_z_imp.num), cell2mat(G_z_imp.den));
 grid on;
-title('Pole-Zero Plot (Impulse Invariant Method)');
+title('Polos y Ceros en Z  –  Método Impulse Invariant');
 
-% Step response comparison
+%% 5. COMPARACIÓN: RESPUESTA AL ESCALÓN
+% Con Ts = 1 ms (muy pequeño frente a la dinámica del sistema), los tres
+% coinciden casi perfectamente. Aumentar Ts para ver las discrepancias.
 figure;
 step(G_s, 'b', G_z_zoh, 'r--', G_z_imp, 'g--');
 grid on;
-legend('Continuous', 'ZOH', 'Impulse Invariant');
-title('Step Response Comparison');
+legend('Continuo G(s)', 'ZOH  G(z)', 'Impulse Inv.  G(z)');
+title('Respuesta al Escalón – Continuo vs. Discreto');
 
-% Impulse response comparison
+%% 6. COMPARACIÓN: RESPUESTA AL IMPULSO
+% ZOH NO preserva la respuesta al impulso (no es su objetivo).
+% Impulse Invariant SÍ la preserva por construcción: notar la diferencia
+% en la amplitud inicial entre ambos métodos discretos.
 figure;
 impulse(G_s, 'b', G_z_zoh, 'r--', G_z_imp, 'g--');
 grid on;
-legend('Continuous', 'ZOH', 'Impulse Invariant');
-title('Impulse Response Comparison');
+legend('Continuo G(s)', 'ZOH  G(z)', 'Impulse Inv.  G(z)');
+title('Respuesta al Impulso – Continuo vs. Discreto');
+
+%% 7. APERTURA DEL MODELO SIMULINK COMPLEMENTARIO
+% S2Z_1_Sim.slx lee del workspace las variables Ts, G_s, G_z_zoh y G_z_imp.
+% Permite visualizar dentro de Simulink el efecto del bloque ZOH sobre la
+% señal de control tal como ocurre en un sistema embebido real.
+% IMPORTANTE: ejecutar las secciones anteriores ANTES de abrir el modelo.
+open_system('S2Z_1_Sim');

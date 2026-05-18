@@ -7,7 +7,7 @@ El controlador se diseñará y/o implementará en un microcontrolador. Es necesa
 ## 4.2 Métodos clásicos
 
 | Método | Mapeo s → z | Características |
-|--------|-------------|-----------------|
+| -------- | ------------- | ----------------- |
 | **ZOH** (Zero-Order Hold) | Equivalente exacto al DAC con retención de orden cero | Preserva respuesta al escalón; preferido para control |
 | **Impulse Invariant** | Iguala respuesta al impulso muestreada | Puede generar alias si $f_s$ no es alta |
 | **Tustin / Bilineal** | $s \approx \dfrac{2}{T_s} \cdot \dfrac{z-1}{z+1}$ | Preserva estabilidad; introduce *frequency warping* |
