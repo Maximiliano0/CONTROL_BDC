@@ -66,14 +66,14 @@ $$
 
 > En el script `bdc_motor_src.m` se trabaja con esta representación 2×2 y se mide **velocidad angular $\omega$**.
 
-## 1.5 Extensión a Espacio de Estados 3×3 — Posición (capítulos 02 → 07)
+## 1.5 Extensión a Espacio de Estados 3×3 — Posición (capítulos 02 → 09)
 
 A partir del capítulo 02 se añade $x_3 = \theta$ con $\dot{x}_3 = x_2$ y se mide **posición angular**:
 
 $$
 A=\begin{bmatrix}-R_a/L_a & -K_b/L_a & 0\\ K_b/J_e & -B_e/J_e & 0\\ 0 & 1 & 0\end{bmatrix},
 \;
-B=\begin{bmatrix}1/L_a\\0\\0\end{bmatrix},
+B=\begin{bmatrix}1/L_a \\ 0 \\ 0\end{bmatrix},
 \;
 C=\begin{bmatrix}0 & 0 & 1\end{bmatrix}
 $$
@@ -82,7 +82,7 @@ $$
 
 ## 1.6 Parámetros usados en el curso
 
-| Símbolo | Descripción | Valor (clase intro — cap. 01 y 02) | Valor (planta real — cap. 05–07) |
+| Símbolo | Descripción | Valor (clase intro — cap. 01 y 02) | Valor (planta real — cap. 05–09) |
 |---------|-------------|------------------------------------|----------------------------------|
 | $R_a$ | Resistencia de armadura | 0.5 Ω | 11 Ω |
 | $L_a$ | Inductancia de armadura | 0.5 H | 0.008 H |
@@ -114,24 +114,24 @@ $R_a=0{,}5\,\Omega$, $L_a=0{,}5\,\text{H}$, $K_b=K=0{,}01$, $J_e=0{,}01\,\text{k
 
 | Magnitud | Expresión | Valor |
 |----------|-----------|-------|
-| $\tau_e$ | $L_a/R_a$ | $1{,}00\,$s |
-| $\tau_m$ | $J_e/B_e$ | $0{,}10\,$s |
-| $K_{dc}$ | $K/(B_e R_a + K K_b)$ | $\approx 0{,}1998$ rad/(V·s) |
-| Polos de $G(s)$ | raíces de $0{,}005 s^2 + 0{,}055 s + 0{,}0501$ | $s_1\!\approx\!-1{,}05$, $s_2\!\approx\!-9{,}95$ |
+| $\tau_e$ | $L_a/R_a$ | $1{,}00\ \text{s}$ |
+| $\tau_m$ | $J_e/B_e$ | $0{,}10\ \text{s}$ |
+| $K_{dc}$ | $K/(B_e R_a + K K_b)$ | $\approx 0{,}1998\ \text{rad/(V·s)}$ |
+| Polos de $G(s)$ | raíces de $0{,}005\,s^2 + 0{,}055\,s + 0{,}0501$ | $s_1 \approx -1{,}05$, $s_2 \approx -9{,}95$ |
 
 Los polos están bien separados → la respuesta luce "de primer orden" en escala mecánica.
 
 ### Parámetros de planta real (capítulos 05–09)
 
-$R_a=11\,\Omega$, $L_a=0{,}008\,\text{H}$, $K_b=K=0{,}0014$, $J_e=7{,}56\!\times\!10^{-4}\,\text{kg·m}^2$, $B_e=10^{-5}\,\text{N·m·s}$.
+$R_a = 11\,\Omega$, $L_a = 0{,}008\,\text{H}$, $K_b = K = 0{,}0014$, $J_e = 7{,}56 \times 10^{-4}\,\text{kg·m}^2$, $B_e = 10^{-5}\,\text{N·m·s}$.
 
 | Magnitud | Expresión | Valor |
 |----------|-----------|-------|
-| $\tau_e$ | $L_a/R_a$ | $7{,}27\!\times\!10^{-4}\,$s ($\approx 0{,}73\,$ms) |
-| $\tau_m$ | $J_e/B_e$ | $75{,}6\,$s |
-| $K_{dc}$ | $K/(B_e R_a + K K_b)$ | $\approx 12{,}1$ rad/(V·s) |
+| $\tau_e$ | $L_a/R_a$ | $7{,}27 \times 10^{-4}\ \text{s}$ ($\approx 0{,}73\ \text{ms}$) |
+| $\tau_m$ | $J_e/B_e$ | $75{,}6\ \text{s}$ |
+| $K_{dc}$ | $K/(B_e R_a + K K_b)$ | $\approx 12{,}1\ \text{rad/(V·s)}$ |
 
-La enorme separación $\tau_m/\tau_e \approx 10^5$ es típica de motores reales con baja inductancia y baja fricción: el modelo es **stiff** y exige $T_s \lesssim \tau_e/10 \approx 70\,\mu$s si se quiere capturar la dinámica de corriente, o $T_s \approx 1$–10 ms si solo interesa la dinámica de posición (eligiendo $T_s = 1$ ms como en los capítulos 05–06).
+La enorme separación $\tau_m/\tau_e \approx 10^5$ es típica de motores reales con baja inductancia y baja fricción: el modelo es **stiff** y exige $T_s \lesssim \tau_e/10 \approx 70\ \mu\text{s}$ si se quiere capturar la dinámica de corriente, o $T_s \approx 1$–10 ms si solo interesa la dinámica de posición (eligiendo $T_s = 1$ ms como en los capítulos 05–06).
 
 ### Verificación en MATLAB
 
@@ -143,4 +143,4 @@ dcgain(G)      % -> aprox 12.1
 zpk(G)
 ```
 
-Observar que el polo eléctrico ($\approx -1{,}375\!\times\!10^3$) corresponde a $1/\tau_e$ y el polo mecánico ($\approx -1{,}46$) a $1/\tau_m^{\text{eff}}$, donde $\tau_m^{\text{eff}}$ resulta menor que $\tau_m$ porque la fuerza contraelectromotriz añade amortiguamiento efectivo $K\,K_b/R_a$ a la dinámica mecánica.
+Observar que el polo eléctrico ($\approx -1{,}375 \times 10^3$) corresponde a $1/\tau_e$ y el polo mecánico ($\approx -1{,}46$) a $1/\tau_m^{\text{eff}}$, donde $\tau_m^{\text{eff}}$ resulta menor que $\tau_m$ porque la fuerza contraelectromotriz añade amortiguamiento efectivo $K\,K_b/R_a$ a la dinámica mecánica.
