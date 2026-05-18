@@ -38,7 +38,7 @@ Para matrices invertibles, $\int_0^{T_s} e^{A\tau}d\tau = A^{-1}(e^{A T_s} - I)$
 
 Para un polo $s = \sigma + j\omega$ con muestreo $T_s$:
 
-$$ z = e^{s T_s} = e^{\sigma T_s} \big( \cos(\omega T_s) + j \cdot \sin(\omega T_s) \big) $$
+$$ z = e^{s T_s} = e^{\sigma T_s} \bigl( \cos(\omega T_s) + j \cdot \sin(\omega T_s) \bigr) $$
 
 - **Constante $\sigma$ (decaimiento):** se mapea como circunferencias concéntricas en z. $\sigma<0$ → interior del círculo unitario.
 - **Constante $\omega$ (frecuencia):** se mapea como rayos radiales. $\omega = \omega_s/2$ corresponde al punto $z=-1$.

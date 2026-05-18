@@ -23,9 +23,9 @@ Esa carga acumulada es el **windup integral**: cuando finalmente la salida llega
 
 Idea: cuando la salida del PID se satura, "frenamos" la integración añadiendo un término que descarga el integrador en proporción a la diferencia entre lo solicitado y lo realmente entregado.
 
-$$ u_{\text{sat}}[k] = \mathrm{sat}\!\big(u_p[k] + u_i[k] + u_d[k],\, V_{\min},\, V_{\max}\big) $$
+$$ u_{\text{sat}}[k] = \mathrm{sat}\!\bigl(u_p[k] + u_i[k] + u_d[k],\, V_{\min},\, V_{\max}\bigr) $$
 
-$$ u_i[k] = u_i[k-1] + K_i \cdot T_s \cdot e[k] + K_{aw} \cdot T_s \cdot \big(u_{\text{sat}}[k-1] - u_{\text{calc}}[k-1]\big) $$
+$$ u_i[k] = u_i[k-1] + K_i \cdot T_s \cdot e[k] + K_{aw} \cdot T_s \cdot \bigl(u_{\text{sat}}[k-1] - u_{\text{calc}}[k-1]\bigr) $$
 
 donde $K_{aw}$ es la **ganancia de back-calculation**. Una elección razonable:
 

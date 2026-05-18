@@ -10,7 +10,7 @@ r(t) → [ADC]→ r[k] → [μC: G_c(z)] → u[k] → [DAC/ZOH] → u(t) → pla
 
 - **Período de muestreo:** $T_s = 1/f_s$.
 - **Teorema de Nyquist–Shannon:** $f_s > 2 f_{\max}$ del contenido de la señal.
-- **Regla de ingeniería de control:** $f_s \approx 10 \cdots 30 \times f_{\text{lazo cerrado}}$.
+- **Regla de ingeniería de control:** $f_s \approx 10\text{–}30 \times f_{\text{lazo cerrado}}$.
 - **Retenedor de Orden Cero (ZOH):** mantiene la salida del DAC constante durante todo el período → introduce un retardo equivalente de $T_s/2$ y un cero adicional fuera del círculo unitario.
 
 Material: [Sampling and Hold.pdf](../03_dominio_z/Sampling%20and%20Hold.pdf).
@@ -41,7 +41,7 @@ Repaso completo: [Repaso Z.pdf](../03_dominio_z/Repaso%20Z.pdf).
 
 ## 3.3 Estabilidad: Círculo Unitario
 
-Un sistema discreto LTI es estable **sí y solo si** todos los polos cumplen $|z_i| < 1$.
+Un sistema discreto LTI es estable **si y solo si** todos los polos cumplen $|z_i| < 1$.
 
 | Región del plano s | Región mapeada en z |
 | -------------------- | --------------------- |

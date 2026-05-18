@@ -4,7 +4,7 @@
 
 ## 5.1 Estructura del PID Continuo
 
-$$ C(s) = K_p + \frac{K_i}{s} + \frac{K_d \cdot s}{1 + T_f \cdot s} $$
+$$ C(s) = K_p + \frac{K_i}{s} + \frac{K_d \, s}{1 + T_f \, s} $$
 
 El término derivativo se acompaña de un **filtro causal** $1/(1+T_f s)$ porque un derivador puro es no realizable y amplifica ruido.
 
@@ -24,7 +24,7 @@ Estas ecuaciones son el **algoritmo a implementar** en el microcontrolador. Sól
 
 ### Derivación de la rama derivativa
 
-Partimos del derivador con filtro causal $C_d(s) = \dfrac{K_d s}{1 + T_f s}$. Discretizando por backward Euler ($s \to (1 - z^{-1})/T_s$):
+Partimos del derivador con filtro causal $C_d(s) = \dfrac{K_d \, s}{1 + T_f \, s}$. Discretizando por backward Euler ($s \to (1 - z^{-1})/T_s$):
 
 $$ C_d(z) = \frac{K_d \cdot (1 - z^{-1})/T_s}{1 + T_f \cdot (1 - z^{-1})/T_s} = \frac{K_d \cdot (1 - z^{-1})}{(T_f + T_s) - T_f \cdot z^{-1}}. $$
 
