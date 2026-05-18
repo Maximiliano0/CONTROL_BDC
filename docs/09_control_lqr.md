@@ -1,4 +1,4 @@
-# 9. Control LQR Discreto (Cuadrático Óptimo)
+﻿# 9. Control LQR Discreto (Cuadrático Óptimo)
 
 > Aplicación: control de **posición angular** del motor BDC con modelo **3×3** discretizado por ZOH y los **parámetros de la planta real**, eligiendo la realimentación que **minimiza un funcional de costo cuadrático**.
 
@@ -10,14 +10,14 @@ En los capítulos 02 y 07 ubicamos los polos del lazo cerrado "a mano" a partir 
 2. **No escala bien con $n$**. En sistemas MIMO o de orden alto elegir $n$ polos consistentes con todas las especificaciones es un arte.
 3. **No es óptimo** en ningún sentido formal.
 
-El **regulador lineal cuadrático** (Linear Quadratic Regulator, **LQR**) reformula el problema: en lugar de elegir polos, el diseñador elige **pesos** sobre los estados y sobre la entrada, y el algoritmo entrega la ley $u = -K\,x$ que minimiza un funcional cuadrático. Los polos del lazo cerrado **salen como consecuencia** y siempre quedan dentro del círculo unitario (estabilidad garantizada).
+El **regulador lineal cuadrático** (Linear Quadratic Regulator, **LQR**) reformula el problema: en lugar de elegir polos, el diseñador elige **pesos** sobre los estados y sobre la entrada, y el algoritmo entrega la ley $u = -K \cdot x$ que minimiza un funcional cuadrático. Los polos del lazo cerrado **salen como consecuencia** y siempre quedan dentro del círculo unitario (estabilidad garantizada).
 
 ## 9.2 Funcional de Costo Discreto
 
-Para el sistema $x[k+1] = \Phi\,x[k] + \Gamma\,u[k]$ se define el costo de horizonte infinito:
+Para el sistema $x[k+1] = \Phi \cdot x[k] + \Gamma \cdot u[k]$ se define el costo de horizonte infinito:
 
 $$
-\boxed{\;J = \sum_{k=0}^{\infty}\Bigl( x[k]^T\,Q\,x[k] + u[k]^T\,R\,u[k] \Bigr)\;}
+\boxed{\;J = \sum_{k=0}^{\infty}\Bigl( x[k]^T \cdot Q \cdot x[k] + u[k]^T \cdot R \cdot u[k] \Bigr)\;}
 $$
 
 con:
@@ -35,19 +35,19 @@ Interpretación:
 La ley de control óptima es **lineal y estacionaria**:
 
 $$
-u[k] = -K\,x[k]
+u[k] = -K \cdot x[k]
 $$
 
 con
 
 $$
-K = \bigl(R + \Gamma^T P\,\Gamma\bigr)^{-1}\,\Gamma^T P\,\Phi,
+K = \bigl(R + \Gamma^T P \cdot \Gamma\bigr)^{-1} \cdot \Gamma^T P \cdot \Phi,
 $$
 
 donde $P$ es la **única solución simétrica definida positiva** de la **Ecuación Algebraica de Riccati Discreta** (DARE):
 
 $$
-P = \Phi^T P\,\Phi \;-\; \Phi^T P\,\Gamma\,\bigl(R + \Gamma^T P\,\Gamma\bigr)^{-1}\,\Gamma^T P\,\Phi \;+\; Q.
+P = \Phi^T P \cdot \Phi \;-\; \Phi^T P \cdot \Gamma \cdot \bigl(R + \Gamma^T P \cdot \Gamma\bigr)^{-1} \cdot \Gamma^T P \cdot \Phi \;+\; Q.
 $$
 
 En MATLAB se resuelve con una sola línea:
@@ -70,7 +70,7 @@ $$ \frac{\partial}{\partial u}\bigl[u^T R u + (\Phi x + \Gamma u)^T P_{k+1}(\Phi
 
 Despejando:
 
-$$ u^* = -\bigl(R + \Gamma^T P_{k+1}\Gamma\bigr)^{-1}\Gamma^T P_{k+1}\Phi\,x = -K_k\,x. $$
+$$ u^* = -\bigl(R + \Gamma^T P_{k+1}\Gamma\bigr)^{-1}\Gamma^T P_{k+1}\Phi \cdot x = -K_k \cdot x. $$
 
 Reinsertando $u^*$ en la igualdad de Bellman se obtiene la **recurrencia de Riccati**:
 
@@ -105,8 +105,8 @@ Para el motor BDC, valores razonables:
 | Variable | Valor máximo "tolerable" | Peso |
 |----------|--------------------------|------|
 | $i_{a,\max}$ | 5 A | $1/25$ |
-| $\omega_{\max}$ | 200 rad/s | $1/40\,000$ |
-| $\theta_{\max}$ | $\sim 20°$ ($0{,}349$ rad) | $1/0{,}122$ |
+| $\omega_{\max}$ | 200 rad/s | $1/40 \cdot 000$ |
+| $\theta_{\max}$ | $\sim 20°$ ($0.349$ rad) | $1/0.122$ |
 | $u_{\max}$ | 24 V | $1/576$ |
 
 A partir de esta línea base se afina iterativamente:
@@ -121,9 +121,9 @@ El LQR puro es un **regulador** ($r=0$). Para que el sistema siga una referencia
 
 1. **Pre-compensación $K_{dc}$** (estática):
 
-   $$ K_{dc} = \frac{1}{C_d\,(I - (\Phi - \Gamma K))^{-1}\,\Gamma},\qquad u = -K\,x + K_{dc}\,r. $$
+ $$ K_{dc} = \frac{1}{C_d \cdot (I - (\Phi - \Gamma K))^{-1} \cdot \Gamma},\qquad u = -K \cdot x + K_{dc} \cdot r. $$
 
-   Simple, pero sensible a errores de modelo y a perturbaciones constantes.
+ Simple, pero sensible a errores de modelo y a perturbaciones constantes.
 
 2. **LQR con acción integral** (LQI): se aumenta el estado con $x_i[k+1] = x_i[k] + (r - y[k])$ y se aplica LQR al sistema aumentado de orden $n+1$. Garantiza error cero en estado estacionario y rechazo de perturbaciones.
 
@@ -145,15 +145,15 @@ En este capítulo usamos la opción 1 para alinearnos con la metodología del ca
 
 ```c
 // Pre-cálculo offline en MATLAB:
-//   [K, P, eig_cl] = dlqr(Phi, Gamma, Q, R);
-//   Kdc = 1 / (Cd * inv(I - (Phi - Gamma*K)) * Gamma);
+// [K, P, eig_cl] = dlqr(Phi, Gamma, Q, R);
+// Kdc = 1 / (Cd * inv(I - (Phi - Gamma*K)) * Gamma);
 // Guardar K[3] y Kdc en flash.
 
-void timer_isr(void) {            // cada Ts segundos
-    leer_estados(x);              // medidos o estimados (cap. 08)
-    float u = -K[0]*x[0] - K[1]*x[1] - K[2]*x[2] + Kdc * referencia;
-    u = saturate(u, V_MIN, V_MAX);
-    write_pwm(u);
+void timer_isr(void) { // cada Ts segundos
+ leer_estados(x); // medidos o estimados (cap. 08)
+ float u = -K[0]*x[0] - K[1]*x[1] - K[2]*x[2] + Kdc * referencia;
+ u = saturate(u, V_MIN, V_MAX);
+ write_pwm(u);
 }
 ```
 
@@ -170,7 +170,7 @@ El script [lqr_bdc_z.m](../09_control_lqr/lqr_bdc_z.m) construye **cuatro** cont
 | **C — suave** | $R \times 100$ | Penaliza el voltaje → respuesta lenta, menos saturación |
 | **PP — pole-placement** | $K$ del cap. 07 | Referencia visual |
 
-Para cada uno simula el lazo con **saturación de actuador** ($\pm 24\,$V) y grafica:
+Para cada uno simula el lazo con **saturación de actuador** ($\pm 24\ \text{V}$) y grafica:
 
 1. Posición angular vs. referencia.
 2. Esfuerzo de control con bandas de saturación.
@@ -191,9 +191,9 @@ Por consola se reportan $M_p$, $t_p$, $|u|_{\max}$ y $J_\infty$ de cada estrateg
 
 ## 9.12 Ejemplo numérico (sintonizado base Bryson)
 
-Con los parámetros del motor real, $T_s = 10\,$ms y los topes de Bryson del script ($i_{a,\max}=5$ A, $\omega_{\max}=200$ rad/s, $\theta_{\max}=20° \approx 0{,}349$ rad, $u_{\max}=24$ V):
+Con los parámetros del motor real, $T_s = 10\ \text{ms}$ y los topes de Bryson del script ($i_{a,\max}=5$ A, $\omega_{\max}=200$ rad/s, $\theta_{\max}=20° \approx 0.349$ rad, $u_{\max}=24$ V):
 
-$$ Q = \mathrm{diag}\bigl(1/25,\; 1/40\,000,\; 1/0{,}122\bigr),\qquad R = 1/576. $$
+$$ Q = \mathrm{diag}\bigl(1/25,\; 1/40 \cdot 000,\; 1/0.122\bigr),\qquad R = 1/576. $$
 
 `dlqr` arroja un $K$ con **tercera componente dominante** (la penalización relativa sobre $\theta$ es la mayor de las tres en $Q$):
 
@@ -209,9 +209,9 @@ Una propiedad clásica del LQR continuo es **margen de ganancia infinito superio
 
 | Ajuste | $Q_{33}$ | $R$ | Comportamiento esperado |
 |--------|----------|-----|-------------------------|
-| Bryson | $1/0{,}122$ | $1/576$ | Equilibrio referencia. |
-| Rápido ($Q_{33}\!\times\!100$) | $100/0{,}122$ | $1/576$ | Sube agresivamente, riesgo de saturar. |
-| Suave ($R\!\times\!100$) | $1/0{,}122$ | $100/576$ | Voltaje muy bajo, tiempo de subida largo. |
+| Bryson | $1/0.122$ | $1/576$ | Equilibrio referencia. |
+| Rápido ($Q_{33} \times 100$) | $100/0.122$ | $1/576$ | Sube agresivamente, riesgo de saturar. |
+| Suave ($R \times 100$) | $1/0.122$ | $100/576$ | Voltaje muy bajo, tiempo de subida largo. |
 | Equivalente PP | — | — | Coincide con el resultado del capítulo previo. |
 
 El costo acumulado $J(t) = \sum_{k=0}^{N} x^T Q x + u^T R u$ que grafica el script confirma que **el sintonizado base de Bryson minimiza $J$** — los otros tres son peores en $J$ por construcción del problema, aunque puedan ser mejores en métricas no incluidas en $Q,R$ (sobreimpulso, slew rate, etc.).

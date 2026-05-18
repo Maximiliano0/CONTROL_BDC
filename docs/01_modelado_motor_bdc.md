@@ -1,4 +1,4 @@
-# 1. Modelado Matemático del Motor BDC
+﻿# 1. Modelado Matemático del Motor BDC
 
 ## 1.1 Introducción
 
@@ -8,45 +8,45 @@ El motor de corriente continua con escobillas (**Brushed DC Motor — BDC**) es 
 
 ### Subsistema Eléctrico (Ley de Kirchhoff de tensiones)
 
-$$ V_a(t) = R_a\, i_a(t) + L_a\, \frac{d\,i_a(t)}{dt} + e_b(t) $$
+$$ V_a(t) = R_a \cdot i_a(t) + L_a \cdot \frac{d \cdot i_a(t)}{dt} + e_b(t) $$
 
 donde la fuerza contraelectromotriz es proporcional a la velocidad angular:
 
-$$ e_b(t) = K_b\, \omega(t) $$
+$$ e_b(t) = K_b \cdot \omega(t) $$
 
 ### Subsistema Mecánico (Segunda ley de Newton para rotación)
 
-$$ J_e\, \frac{d\,\omega(t)}{dt} = T_m(t) - B_e\, \omega(t) - T_L(t) $$
+$$ J_e \cdot \frac{d \cdot \omega(t)}{dt} = T_m(t) - B_e \cdot \omega(t) - T_L(t) $$
 
 con torque electromagnético:
 
-$$ T_m(t) = K\, i_a(t) $$
+$$ T_m(t) = K \cdot i_a(t) $$
 
 En unidades SI y motor ideal: $K_b = K$.
 
 ### Acople Posición — Velocidad
 
-$$ \frac{d\,\theta(t)}{dt} = \omega(t) $$
+$$ \frac{d \cdot \theta(t)}{dt} = \omega(t) $$
 
 ## 1.3 Función de Transferencia (Velocidad)
 
 Aplicando Laplace con condiciones iniciales nulas y $T_L=0$:
 
-$$ (R_a + L_a s)\,I_a(s) + K_b\,\Omega(s) = V_a(s) $$
+$$ (R_a + L_a s) \cdot I_a(s) + K_b \cdot \Omega(s) = V_a(s) $$
 
-$$ (J_e s + B_e)\,\Omega(s) = K\,I_a(s) $$
+$$ (J_e s + B_e) \cdot \Omega(s) = K \cdot I_a(s) $$
 
-Despejando $I_a(s) = (J_e s + B_e)\,\Omega(s)/K$ y sustituyendo:
+Despejando $I_a(s) = (J_e s + B_e) \cdot \Omega(s)/K$ y sustituyendo:
 
-$$ \bigl[(R_a + L_a s)(J_e s + B_e) + K\,K_b\bigr]\,\Omega(s) = K\,V_a(s) $$
+$$ \bigl[(R_a + L_a s)(J_e s + B_e) + K \cdot K_b\bigr] \cdot \Omega(s) = K \cdot V_a(s) $$
 
 $$
-\boxed{\;G(s) = \frac{\Omega(s)}{V_a(s)} = \frac{K}{(J_e L_a)\,s^2 + (J_e R_a + B_e L_a)\,s + (B_e R_a + K\,K_b)}\;}
+\boxed{\;G(s) = \frac{\Omega(s)}{V_a(s)} = \frac{K}{(J_e L_a) \cdot s^2 + (J_e R_a + B_e L_a) \cdot s + (B_e R_a + K \cdot K_b)}\;}
 $$
 
 ### Constantes de tiempo dominantes
 
-Cuando $K\,K_b \ll B_e R_a$ (motores con poco acople electromecánico) la TF se factoriza aproximadamente como
+Cuando $K \cdot K_b \ll B_e R_a$ (motores con poco acople electromecánico) la TF se factoriza aproximadamente como
 
 $$ G(s) \approx \frac{K_{dc}}{(1 + \tau_e s)(1 + \tau_m s)},\quad
 \tau_e = \frac{L_a}{R_a},\quad \tau_m = \frac{J_e}{B_e},\quad K_{dc} = \frac{K}{B_e R_a + K K_b}. $$
@@ -117,7 +117,7 @@ $R_a=0.5\,\Omega$, $L_a=0.5\,\text{H}$, $K_b=K=0.01$, $J_e=0.01\,\text{kg·m}^2$
 | $\tau_e$ | $L_a/R_a$ | $1.00\ \text{s}$ |
 | $\tau_m$ | $J_e/B_e$ | $0.10\ \text{s}$ |
 | $K_{dc}$ | $K/(B_e R_a + K K_b)$ | $\approx 0.1998\ \text{rad/(V·s)}$ |
-| Polos de $G(s)$ | raíces de $0.005\,s^2 + 0.055\,s + 0.0501$ | $s_1 \approx -1.05$, $s_2 \approx -9.95$ |
+| Polos de $G(s)$ | raíces de $0.005 \cdot s^2 + 0.055 \cdot s + 0.0501$ | $s_1 \approx -1.05$, $s_2 \approx -9.95$ |
 
 Los polos están bien separados → la respuesta luce "de primer orden" en escala mecánica.
 
@@ -138,9 +138,9 @@ La enorme separación $\tau_m/\tau_e \approx 10^5$ es típica de motores reales 
 ```matlab
 Ra=11; La=0.008; K=0.0014; Je=7.56e-4; Be=1e-5;
 G = tf(K, [Je*La, Je*Ra+Be*La, Be*Ra+K*K]);
-pole(G)        % -> aprox [-1374.9, -1.46]
-dcgain(G)      % -> aprox 12.1
+pole(G) % -> aprox [-1374.9, -1.46]
+dcgain(G) % -> aprox 12.1
 zpk(G)
 ```
 
-Observar que el polo eléctrico ($\approx -1.375 \times 10^3$) corresponde a $1/\tau_e$ y el polo mecánico ($\approx -1.46$) a $1/\tau_m^{\text{eff}}$, donde $\tau_m^{\text{eff}}$ resulta menor que $\tau_m$ porque la fuerza contraelectromotriz añade amortiguamiento efectivo $K\,K_b/R_a$ a la dinámica mecánica.
+Observar que el polo eléctrico ($\approx -1.375 \times 10^3$) corresponde a $1/\tau_e$ y el polo mecánico ($\approx -1.46$) a $1/\tau_m^{\text{eff}}$, donde $\tau_m^{\text{eff}}$ resulta menor que $\tau_m$ porque la fuerza contraelectromotriz añade amortiguamiento efectivo $K \cdot K_b/R_a$ a la dinámica mecánica.
