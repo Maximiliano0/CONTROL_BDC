@@ -1,19 +1,26 @@
 % =========================================================================
-% Control LQR Discreto (Cuadrático Óptimo) - Motor BDC (3x3)
-% Aplicación: control de POSICIÓN angular minimizando el funcional
-%   J = sum_k ( x[k]' Q x[k] + u[k]' R u[k] )
-% Parámetros: planta real (Ra=11, La=0.008, Kb=0.0014, Je=7.56e-4, Be=1e-5)
-% =========================================================================
-%
-% Idea: en lugar de elegir polos a mano (cap. 07), ELEGIMOS PESOS sobre
-% los estados (Q) y sobre el esfuerzo (R). El algoritmo dlqr resuelve la
-% ecuación de Riccati discreta y devuelve la K óptima que minimiza J.
-%
+% Cap. 09 — CONTROL LQR DISCRETO (CUADRÁTICO ÓPTIMO, 3x3, planta real)
+% -------------------------------------------------------------------------
+% Propósito  : Diseñar control LQR discreto con `dlqr` usando la regla de
+%              Bryson para fijar Q y R; comparar tres configuraciones
+%              (baseline, "rápido", "suave") y contrastarlas con el pole-
+%              placement del cap. 07. Minimiza
+%                  J = Σ_k ( x[k]ᵀ Q x[k] + u[k]ᵀ R u[k] ).
+% Aplicación : Motor BDC (modelo 3x3, planta real), posición angular θ.
+% Parámetros : Planta real (Ra=11, La=0.008, Kb=0.0014, Je=7.56e-4, Be=1e-5);
+%              saturación V_max = ±24 V; rangos Bryson:
+%              ia_max=5 A, we_max=200 rad/s, theta_max=20°.
+% Muestreo   : Ts = 10 ms.
+% Entradas   : Ts, Ref_grados, V_max, ia_max, we_max, theta_max, Mp_pp, tp_pp.
+% Salidas    : K_A/K_B/K_C (LQR) y K_pp (pole-placement), métricas (Mp,
+%              ts, J) en consola y figura comparativa de las 4 estrategias.
+% Doc        : docs/09_control_lqr.md
+% -------------------------------------------------------------------------
 % Comparamos:
-%   - LQR baseline (regla de Bryson sobre rangos máximos esperados)
-%   - LQR "barato en control" (R bajo  -> respuesta rápida, mucho voltaje)
-%   - LQR "caro en control"   (R alto  -> respuesta suave, poco voltaje)
-%   - Pole-placement del cap. 07 (referencia visual)
+%   - LQR (A) baseline       : regla de Bryson sobre rangos máximos.
+%   - LQR (B) "barato en u"  : R bajo  → respuesta rápida, mucho voltaje.
+%   - LQR (C) "caro en u"    : R alto  → respuesta suave, poco voltaje.
+%   - Pole-placement cap. 07 : referencia visual.
 % =========================================================================
 
 clear; clc; close all;

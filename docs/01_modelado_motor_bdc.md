@@ -8,7 +8,7 @@ El motor de corriente continua con escobillas (**Brushed DC Motor — BDC**) es 
 
 ### Subsistema Eléctrico (Ley de Kirchhoff de tensiones)
 
-$$ V_a(t) = R_a \cdot i_a(t) + L_a \cdot \frac{d\, i_a(t)}{dt} + e_b(t) $$
+$$ V_a(t) = R_a \cdot i_a(t) + L_a \cdot \frac{d\ i_a(t)}{dt} + e_b(t) $$
 
 donde la fuerza contraelectromotriz es proporcional a la velocidad angular:
 
@@ -16,7 +16,7 @@ $$ e_b(t) = K_b \cdot \omega(t) $$
 
 ### Subsistema Mecánico (Segunda ley de Newton para rotación)
 
-$$ J_e \cdot \frac{d\, \omega(t)}{dt} = T_m(t) - B_e \cdot \omega(t) - T_L(t) $$
+$$ J_e \cdot \frac{d\ \omega(t)}{dt} = T_m(t) - B_e \cdot \omega(t) - T_L(t) $$
 
 con torque electromagnético:
 
@@ -41,7 +41,7 @@ Despejando $I_a(s) = (J_e s + B_e) \cdot \Omega(s)/K$ y sustituyendo:
 $$ \bigl[(R_a + L_a s)(J_e s + B_e) + K \cdot K_b\bigr] \cdot \Omega(s) = K \cdot V_a(s) $$
 
 $$
-\boxed{\;G(s) = \frac{\Omega(s)}{V_a(s)} = \frac{K}{(J_e L_a) \cdot s^2 + (J_e R_a + B_e L_a) \cdot s + (B_e R_a + K \cdot K_b)}\;}
+\boxed{\ G(s) = \frac{\Omega(s)}{V_a(s)} = \frac{K}{(J_e L_a) \cdot s^2 + (J_e R_a + B_e L_a) \cdot s + (B_e R_a + K \cdot K_b)}\}
 $$
 
 ### Constantes de tiempo dominantes

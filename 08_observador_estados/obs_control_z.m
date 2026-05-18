@@ -1,20 +1,27 @@
 % =========================================================================
-% Observador de Estados (Luenberger) en DOMINIO Z - Motor BDC (3x3)
-% Aplicación: control de POSICIÓN angular cuando SOLO se mide theta
-% Se estiman en tiempo real ia (corriente) y omega (velocidad) y se
-% realimenta el ESTADO ESTIMADO: u = -Kz * x_hat + Kdc * r
-% Parámetros: planta real (Ra=11, La=0.008, Kb=0.0014, Je=7.56e-4, Be=1e-5)
-% =========================================================================
-%
+% Cap. 08 — OBSERVADOR DE LUENBERGER EN DOMINIO Z (3x3, planta real)
+% -------------------------------------------------------------------------
+% Propósito  : Diseñar un controlador por realimentación de estados con
+%              observador de Luenberger en dominio z. Se mide SOLO θ
+%              (C = [0 0 1]); ia y ω se estiman en tiempo real y se
+%              realimenta el estado estimado: u = -Kz · x_hat + Kdc · r.
+% Aplicación : Motor BDC (modelo 3x3, planta real), posición angular θ.
+% Parámetros : Planta real (Ra=11, La=0.008, Kb=0.0014, Je=7.56e-4, Be=1e-5).
+% Muestreo   : Ts = 10 ms (Fs = 100 Hz).
+% Entradas   : Mp, tp, Ts, Ref_grados, factor_obs, x0_real, x0_hat.
+% Salidas    : K_z, L, K_dc, verificación del principio de separación,
+%              simulación ideal vs realista y gráficos comparativos.
+% Doc        : docs/08_observador_estados.md
+% -------------------------------------------------------------------------
 % Estructura del lazo:
 %
-%   r --(Kdc)--+--> [Planta x[k+1]=Phi*x+Gamma*u] --> y = Cd*x
-%              |                                        |
-%              v                                        v
-%        u = -Kz*xhat                              [Observador]
+%   r --(Kdc)--+--> [Planta x[k+1] = Phi*x + Gamma*u] --> y = Cd*x
+%              |                                            |
+%              v                                            v
+%        u = -Kz*xhat                                  [Observador]
 %                                              xhat[k+1] = Phi*xhat
-%                                                 + Gamma*u
-%                                                 + L*(y - Cd*xhat)
+%                                                       + Gamma*u
+%                                                       + L*(y - Cd*xhat)
 %
 % Principio de separación: Kz y L se diseñan por separado; los polos del
 % sistema completo son la unión de los polos de (Phi - Gamma*Kz) y de

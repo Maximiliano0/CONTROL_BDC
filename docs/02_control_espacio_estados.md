@@ -8,11 +8,11 @@ Diseñar una ley de control por realimentación de estados $u = -K \cdot x + K_{
 
 ## 2.2 Modelo de la Planta (3×3 Posición)
 
-Con $x = [i_a,\,\omega,\,\theta]^T$:
+Con $x = [i_a \ \omega \ \theta]^T$:
 
 $$ A = \begin{bmatrix}-R_a/L_a & -K_b/L_a & 0\\ K_b/J_e & -B_e/J_e & 0\\ 0 & 1 & 0\end{bmatrix}, \quad B = \begin{bmatrix}1/L_a\\ 0\\ 0\end{bmatrix}, \quad C = \begin{bmatrix}0 & 0 & 1\end{bmatrix}, \quad D = 0 $$
 
-En este capítulo se usan los parámetros didácticos: $R_a=0.5\,\Omega$, $L_a=0.5\,\text{H}$, $K_b=0.01$, $J_e=0.01\,\text{kg·m}^2$, $B_e=0.1\,\text{N·m·s}$.
+En este capítulo se usan los parámetros didácticos: $R_a=0.5\ \Omega$, $L_a=0.5\ \text{H}$, $K_b=0.01$, $J_e=0.01\ \text{kg·m}^2$, $B_e=0.1\ \text{N·m·s}$.
 
 ## 2.3 Mapeo Especificaciones → Polos
 
@@ -33,7 +33,7 @@ Si el par $(A, B)$ es **controlable** ($\mathrm{rank}\,\mathcal{C} = n$), existe
 
 ### Verificación de controlabilidad
 
-$$ \mathcal{C} = [B\;\; AB\;\; A^2 B] \in \mathbb{R}^{3\times 3} $$
+$$ \mathcal{C} = [B\;\ AB\;\ A^2 B] \in \mathbb{R}^{3\times 3} $$
 
 Para el modelo 3×3 del motor BDC, $\mathrm{rank}\,\mathcal{C} = 3$ ⇒ todo polo es asignable. Esto es consecuencia física de que el voltaje $V_a$ excita la corriente, que produce torque, que mueve la velocidad y por tanto la posición.
 
@@ -41,7 +41,7 @@ Para el modelo 3×3 del motor BDC, $\mathrm{rank}\,\mathcal{C} = 3$ ⇒ todo pol
 
 Para $n=3$:
 
-$$ K = [0\;0\;1] \cdot \mathcal{C}^{-1} \cdot \alpha_d(A),\qquad \alpha_d(A)=(A-p_1 I)(A-p_2 I)(A-p_3 I) $$
+$$ K = [0\ 0\ 1] \cdot \mathcal{C}^{-1} \cdot \alpha_d(A),\qquad \alpha_d(A)=(A-p_1 I)(A-p_2 I)(A-p_3 I) $$
 
 MATLAB usa internamente algoritmos más robustos numéricamente (basados en formas de Schur), pero Ackermann muestra que $K$ es una **expresión cerrada** en términos de los polos y de las matrices del modelo.
 
@@ -57,9 +57,9 @@ de modo que para una referencia escalón $r=1$ se obtenga $\theta_\infty = 1$.
 
 A lazo cerrado, $\dot{x} = (A-BK)x + B \cdot K_{dc} \cdot r$. En estado estacionario con $r$ constante:
 
-$$ 0 = (A-BK) \cdot x_\infty + B \cdot K_{dc} \cdot r \;\Rightarrow\; x_\infty = -(A-BK)^{-1}B \cdot K_{dc} \cdot r $$
+$$ 0 = (A-BK) \cdot x_\infty + B \cdot K_{dc} \cdot r \ \Rightarrow\ x_\infty = -(A-BK)^{-1}B \cdot K_{dc} \cdot r $$
 
-$$ y_\infty = C x_\infty = \underbrace{-C(A-BK)^{-1}B}_{=\,\mathrm{dcgain}} \cdot K_{dc} \cdot r $$
+$$ y_\infty = C x_\infty = \underbrace{-C(A-BK)^{-1}B}_{=\ \mathrm{dcgain}} \cdot K_{dc} \cdot r $$
 
 Forzando $y_\infty = r$ resulta $K_{dc} = 1/\mathrm{dcgain}$. **Limitación crítica:** este $K_{dc}$ se calcula con el modelo nominal; si los parámetros reales difieren (envejecimiento, temperatura, fricción variable) habrá error de seguimiento. La solución robusta es añadir **acción integral** (que el PID del cap. 05 incorpora de forma natural).
 
@@ -93,7 +93,7 @@ $$ A = \begin{bmatrix} -1 & -0.02 & 0 \\ 1 & -10 & 0 \\ 0 & 1 & 0 \end{bmatrix},
 
 Ejecutando `K = place(A, B, [s1 s2 s3])` se obtiene aproximadamente
 
-$$ K \approx [\,50.9,\;\; 4.11 \times 10^3,\;\; 4.30 \times 10^4\,] $$
+$$ K \approx [\,50.9,\;\ 4.11 \times 10^3,\;\ 4.30 \times 10^4\,] $$
 
 y $K_{dc} \approx 4.30 \times 10^4$ (coincide con $K_3$ porque la salida es directamente el estado 3).
 

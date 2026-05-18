@@ -1,9 +1,18 @@
 % =========================================================================
-% Control Digital PID (Dominio Z) con SATURACIÓN y ANTI-WINDUP
-% Aplicación: Control de POSICIÓN angular de Motor BDC (modelo 3x3)
-% Driver: puente H con saturación a +/- 24 V
-% Parámetros: planta real (Ra=11, La=0.008, Kb=0.0014, Je=7.56e-4, Be=1e-5)
-% Script paramétrico: auto-ajusta tiempo y gráficos según 'tp'
+% Cap. 06 — PID DIGITAL CON SATURACIÓN Y ANTI-WINDUP (back-calculation)
+% -------------------------------------------------------------------------
+% Propósito  : Comparar el mismo PID digital SIN y CON anti-windup ante
+%              saturación del actuador (puente H ±24 V), usando back-
+%              calculation. Script paramétrico: tiempo y gráficos se
+%              auto-ajustan según `tp`.
+% Aplicación : Motor BDC (modelo 3x3, planta real), C = [0 0 1].
+% Parámetros : Planta real (Ra=11, La=0.008, Kb=0.0014, Je=7.56e-4, Be=1e-5);
+%              saturación Vsat = ±24 V.
+% Muestreo   : Ts = 1 ms.
+% Entradas   : Mp, tp, Escalon_Ref (magnitud de referencia en rad).
+% Salidas    : Figura con 4 subplots comparando respuesta sin/con AW,
+%              esfuerzo de control, error e integrador.
+% Doc        : docs/06_anti_windup.md
 % =========================================================================
 
 clear; clc; close all;

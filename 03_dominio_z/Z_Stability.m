@@ -1,7 +1,19 @@
-%% ========================================================================
-% ANÁLISIS DE ESTABILIDAD Y RESPUESTA (Lazo Abierto en 'z')
-% ========================================================================
-clc; clear; close all;
+% =========================================================================
+% Cap. 03 — ANÁLISIS DE ESTABILIDAD EN DOMINIO Z (lazo abierto)
+% -------------------------------------------------------------------------
+% Propósito  : Analizar la estabilidad de un sistema discreto G(z) en
+%              lazo abierto: ubicación de polos respecto al círculo
+%              unitario, respuesta al escalón y Bode digital.
+% Aplicación : Sistema genérico G(z) = (z-0.5)/(z² - 1.5z + 0.7).
+%              NO representa la planta del motor (ejemplo didáctico).
+% Parámetros : Coeficientes fijos del polinomio en z.
+% Muestreo   : Ts = 10 ms (Fs = 100 Hz).
+% Entradas   : Ninguna.
+% Salidas    : Reporte de estabilidad en consola y figura con plano z,
+%              respuesta al escalón y Bode digital.
+% Doc        : docs/03_dominio_z.md
+% =========================================================================
+clear; clc; close all;
 
 %% 1. PARÁMETROS DEL SISTEMA DIGITAL
 Fs = 100;       % Frecuencia de muestreo: 100 Hz

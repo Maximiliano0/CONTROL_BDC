@@ -1,7 +1,17 @@
 % =========================================================================
-% Control en Espacio de Estados (3x3) - Control de POSICIÓN angular
-% del Motor BDC en DOMINIO DISCRETO (Z) - Listo para microcontrolador
-% Parámetros: planta real (Ra=11, La=0.008, Kb=0.0014, Je=7.56e-4, Be=1e-5)
+% Cap. 07 — ASIGNACIÓN DE POLOS EN DOMINIO Z (3x3, planta real)
+% -------------------------------------------------------------------------
+% Propósito  : Asignar polos por realimentación de estados sobre el
+%              modelo discreto 3x3 del motor real (vía c2d/ZOH), calcular
+%              K_z con `place` y pre-compensar con K_dc. Listo para
+%              portar a un microcontrolador.
+% Aplicación : Motor BDC, salida = posición angular θ, C = [0 0 1].
+% Parámetros : Planta real (Ra=11, La=0.008, Kb=0.0014, Je=7.56e-4, Be=1e-5).
+% Muestreo   : Ts = 10 ms.
+% Entradas   : Mp, tp, Ts, Ref_grados (referencia en grados → rad).
+% Salidas    : K_z, K_dc, polos LC en z, figura con respuesta al escalón
+%              + esfuerzo de control + plano z.
+% Doc        : docs/07_control_estados_digital.md
 % =========================================================================
 
 clear; clc; close all;

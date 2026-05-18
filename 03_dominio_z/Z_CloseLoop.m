@@ -1,7 +1,20 @@
-%% ========================================================================
-% SISTEMA EN LAZO CERRADO DIGITAL (Retroalimentación)
-% ========================================================================
-clc; clear; close all;
+% =========================================================================
+% Cap. 03 — LAZO CERRADO DIGITAL (retroalimentación unitaria)
+% -------------------------------------------------------------------------
+% Propósito  : Cerrar el lazo con realimentación unitaria sobre el mismo
+%              G(z) genérico y comparar visualmente polos y respuesta al
+%              escalón en abierto vs cerrado (`stairs` simula la salida
+%              real del DAC).
+% Aplicación : Sistema genérico G(z) = (z-0.5)/(z² - 1.5z + 0.7).
+%              NO representa la planta del motor (ejemplo didáctico).
+% Parámetros : Coeficientes fijos del polinomio en z; ganancia K = 1.
+% Muestreo   : Ts = 1 ms (Fs = 1 kHz).
+% Entradas   : Ninguna.
+% Salidas    : Reporte de estabilidad LC en consola y figura con mapa
+%              polos/ceros y respuesta al escalón abierto vs cerrado.
+% Doc        : docs/03_dominio_z.md
+% =========================================================================
+clear; clc; close all;
 
 %% 1. DEFINICIÓN DEL SISTEMA EN LAZO ABIERTO
 Fs = 1000;      % Frecuencia de muestreo: 1 kHz

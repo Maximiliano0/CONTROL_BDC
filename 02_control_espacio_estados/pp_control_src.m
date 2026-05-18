@@ -1,8 +1,17 @@
 % =========================================================================
-% Control en Espacio de Estados (3x3, CONTINUO) - Posición angular
-% del Motor BDC. A partir de este capítulo se usa el modelo 3x3 con
-% theta como tercer estado y C = [0 0 1] (medición de posición).
-% Parámetros didácticos: Ra=0.5, La=0.5, Kb=0.01, Je=0.01, Be=0.1
+% Cap. 02 — ASIGNACIÓN DE POLOS EN ESPACIO DE ESTADOS (continuo, 3x3)
+% -------------------------------------------------------------------------
+% Propósito  : Diseñar K por realimentación de estados (`place`) sobre el
+%              modelo continuo 3x3 del motor (ia, ω, θ) para controlar
+%              posición angular; validar lazo cerrado y aplicar pre-
+%              compensación estática K_dc.
+% Aplicación : Motor BDC, salida = posición angular θ(t), C = [0 0 1].
+% Parámetros : Didácticos (Ra=0.5, La=0.5, Kb=0.01, Je=0.01, Be=0.1).
+% Muestreo   : — (continuo).
+% Entradas   : Mp (sobreimpulso), tp (tiempo pico).
+% Salidas    : Vector K, K_dc, polos LC y figura con respuesta al escalón
+%              + esfuerzo de control.
+% Doc        : docs/02_control_espacio_estados.md
 % =========================================================================
 
 clear; clc; close all;

@@ -1,11 +1,19 @@
-%% =========================================================================
-% DOMINIOS S <-> Z : Mapeo, Discretización, ROC y Respuesta en Frecuencia
+% =========================================================================
+% Cap. 04 — DOMINIOS S↔Z: mapeo, discretización, ROC y respuesta en frec.
 % -------------------------------------------------------------------------
-% Profesor: Ing. Maximiliano Vega
-%
-% Cinco figuras pedagógicas que ilustran los conceptos fundamentales de la
-% transformación del dominio continuo (s) al discreto (z):
-%   1. Correspondencia S <-> Z  mediante z = exp(s·Ts).
+% Propósito  : Cinco figuras pedagógicas que ilustran los conceptos
+%              fundamentales del paso del dominio continuo (s) al
+%              discreto (z) mediante z = exp(s·Ts).
+% Aplicación : Sistema genérico de 2º orden subamortiguado.
+%              NO representa la planta del motor (ejemplo didáctico).
+% Parámetros : wn = 5 rad/s, ζ = 0.3, Ts_base = 0.1 s.
+% Muestreo   : Varía por figura (Ts_base = 0.1 s como referencia).
+% Entradas   : Ninguna.
+% Salidas    : Cinco figuras pedagógicas (ver lista abajo).
+% Doc        : docs/04_transformacion_s_a_z.md
+% -------------------------------------------------------------------------
+% FIGURAS GENERADAS:
+%   1. Correspondencia S↔Z mediante z = exp(s·Ts).
 %   2. G(s) continuo vs. G(z) discreto (efecto visible del ZOH).
 %   3. Migración de polos en z al variar el tiempo de muestreo Ts.
 %   4. Región de Convergencia (ROC) y fronteras de estabilidad.

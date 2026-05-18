@@ -1,12 +1,17 @@
 % =========================================================================
-% Control Digital PID (Dominio Z)
-% Aplicación: Control de POSICIÓN angular de Motor BDC (modelo 3x3)
-% Parámetros: planta real (Ra=11, La=0.008, Kb=0.0014, Je=7.56e-4, Be=1e-5)
-% =========================================================================
-%
-% NOTA: a partir del capítulo 02 se utiliza el modelo de estados 3x3
-%       del motor (con theta como tercer estado) y se controla la
-%       posición angular del eje (C = [0 0 1]).
+% Cap. 05 — CONTROL PID DIGITAL EN DOMINIO Z (con filtro derivativo)
+% -------------------------------------------------------------------------
+% Propósito  : Sintonizar un PIDF (PID con filtro derivativo) en dominio
+%              z usando `pidtune`, partiendo de especificaciones (Mp, tp)
+%              traducidas a (ωn, ζ, PM) para controlar la posición
+%              angular del motor; validar márgenes y respuesta al escalón.
+% Aplicación : Motor BDC (modelo 3x3, planta real), C = [0 0 1].
+% Parámetros : Planta real (Ra=11, La=0.008, Kb=0.0014, Je=7.56e-4, Be=1e-5).
+% Muestreo   : Ts = 1 ms (configurable en sección 4).
+% Entradas   : Mp, tp.
+% Salidas    : Parámetros C(z) (Kp, Ki, Kd, Tf), márgenes, respuesta al
+%              escalón, bloques individuales para usar en pid_bdc_z_sim.slx.
+% Doc        : docs/05_pid_digital.md
 % =========================================================================
 
 clear; clc; close all;

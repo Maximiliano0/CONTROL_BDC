@@ -1,24 +1,25 @@
-%% =========================================================================
-% TRANSFORMACIÓN S → Z : Comparación de métodos de discretización
+% =========================================================================
+% Cap. 04 — TRANSFORMACIÓN S → Z: comparación de métodos (ZOH e Impulse)
 % -------------------------------------------------------------------------
-% Propósito : Tomar un sistema continuo G(s) y obtener su equivalente
-%             discreto G(z) con dos métodos clásicos (ZOH e Impulse
-%             Invariant), comparar visualmente sus respuestas al escalón
-%             e impulso, y dejar el workspace listo para Simulink.
-%
+% Propósito  : Tomar un sistema continuo G(s) y obtener su equivalente
+%              discreto G(z) por dos métodos clásicos (ZOH e Impulse
+%              Invariant), comparando sus respuestas al escalón e impulso.
+% Aplicación : Sistema genérico G(s) = 1 / (2s² + s + 5).
+%              NO representa la planta del motor (ejemplo didáctico).
+% Parámetros : Coeficientes fijos del polinomio en s.
+% Muestreo   : Ts = 1 ms (Fs = 1 kHz).
+% Entradas   : Ninguna.
+% Salidas    : G_s, G_z_zoh, G_z_imp y Ts exportados al workspace para
+%              usar en S2Z_1_Sim.slx; figura comparativa de respuestas.
+% Doc        : docs/04_transformacion_s_a_z.md
+% -------------------------------------------------------------------------
 % FLUJO DE USO:
 %   1. Ejecutar este script  →  calcula G(s), G_z_zoh y G_z_imp.
 %   2. Abrir S2Z_1_Sim.slx   →  usa esas variables para mostrar el efecto
 %      del bloque ZOH (retención de orden cero) sobre la señal de control.
-%
-% Variables exportadas al workspace para S2Z_1_Sim.slx:
-%   Ts       – Periodo de muestreo [s]
-%   G_s      – FT continua (bloque de planta en Simulink)
-%   G_z_zoh  – G(z) discretizada con ZOH
-%   G_z_imp  – G(z) discretizada con Impulse Invariant
 % =========================================================================
 
-clc; clear; close all;
+clear; clc; close all;
 
 %% 1. UNIDADES Y PARÁMETROS DE MUESTREO
 % Definimos escalas simbólicas para que los valores numéricos sean

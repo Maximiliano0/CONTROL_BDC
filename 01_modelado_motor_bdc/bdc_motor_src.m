@@ -1,7 +1,16 @@
 % =========================================================================
-% Modelado del Motor BDC (Brushed DC Motor)
-% Modelo de estados 2x2 (corriente y velocidad), salida = velocidad angular
-% Parámetros didácticos para esta clase introductoria.
+% Cap. 01 — MODELADO DEL MOTOR BDC (BRUSHED DC MOTOR)
+% -------------------------------------------------------------------------
+% Propósito  : Obtener la función de transferencia y la representación en
+%              espacio de estados (modelo 2x2: corriente y velocidad) de
+%              un motor BDC y visualizar su comportamiento dinámico.
+% Aplicación : Motor BDC, salida = velocidad angular ω(t).
+% Parámetros : Didácticos (Ra=0.5, La=0.5, K=0.01, Je=0.01, Be=0.1).
+% Muestreo   : — (modelo continuo).
+% Entradas   : Ninguna (los parámetros se modifican en el código).
+% Salidas    : Reporte en consola (G(s), A,B,C,D, polos y ceros) y figura
+%              con respuesta al escalón, Bode, polos/ceros y root locus.
+% Doc        : docs/01_modelado_motor_bdc.md
 % =========================================================================
 clear; clc; close all;
 
