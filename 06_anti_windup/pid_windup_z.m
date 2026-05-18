@@ -21,20 +21,23 @@ Escalon_Ref = 10;  % Magnitud de la referencia de posición (rad)
 fprintf('>>> Configuración Actual: tp = %.2f s | Mp = %.0f%% <<<\n\n', tp, Mp*100);
 
 %% 2. DISEÑO DEL PID IDEAL
+% Conversión (Mp, tp) -> (zeta, wn) usando las fórmulas estándar del cap. 02
+% y el margen de fase aproximado (sec 5.7 del .md).
 zeta = -log(Mp) / sqrt(pi^2 + (log(Mp))^2);
 wn = pi / (tp * sqrt(1 - zeta^2));
 PM_deg = rad2deg(atan(2*zeta / sqrt(sqrt(1+4*zeta^4) - 2*zeta^2)));
 
-% Planta Motor DC
+% Planta Motor DC -- modelo 3x3 [ia, w, theta]^T  (sec 1.x del cap. 01)
 Ra = 11; La = 0.008; Kb = 0.0014; Je = 0.000756; Be = 0.00001;
 A = [-Ra/La, -Kb/La, 0 ; Kb/Je, -Be/Je, 0 ; 0, 1, 0]; 
 B = [1/La ; 0 ; 0]; C = [0, 0, 1]; D = 0;
 sys_planta_s = ss(A, B, C, D);
 
-Ts = 0.001; % Muestreo a 1ms
+Ts = 0.001; % Muestreo a 1ms (>> que constante eléctrica tau_e = La/Ra ~ 0.7ms)
 sys_planta_z = c2d(sys_planta_s, Ts, 'zoh');
 
-% Sintonización
+% Sintonización automática con pidtune fijando wn como ancho de banda objetivo
+% y PM_deg como margen de fase requerido (ver doc cap. 05).
 opts = pidtuneOptions('PhaseMargin', PM_deg, 'DesignFocus', 'reference-tracking');
 C_z = pidtune(sys_planta_z, 'PIDF', wn, opts);
 
@@ -48,6 +51,9 @@ V_max = 24;
 V_min = -24;
 
 % Ganancia Anti-Windup (Back-Calculation)
+% Heurística simple: Kaw = Kp/10  (ver Eq. de descarga del integrador,
+% sec 6.3 del .md). Constante de tiempo de descarga T_aw = 1/Kaw.
+% Alternativa: Kaw = sqrt(Ki*Kd) (media geométrica de T_i, T_d).
 Kaw = Kp/10; 
 
 % Horizonte de simulación automático
@@ -70,24 +76,26 @@ ui_aw = 0; ud_aw = 0; e_prev_aw = 0; ui_hist_aw = zeros(1, N);
 for k = 1:N-1
     
     % --- PID SIN ANTI-WINDUP ---
+    % Eq. (5.x): u[k] = up[k] + ui[k] + ud[k]
     y_no_aw(k) = C_mat * x_no_aw(:, k);
     error_no_aw = Referencia(k) - y_no_aw(k);
     
-    up_no_aw = Kp * error_no_aw;
-    ui_no_aw = ui_no_aw + Ki * Ts * error_no_aw;
-    ud_no_aw = (Tf / (Tf + Ts)) * ud_no_aw + (Kd / (Tf + Ts)) * (error_no_aw - e_prev_no_aw);
+    up_no_aw = Kp * error_no_aw;                                            % rama proporcional
+    ui_no_aw = ui_no_aw + Ki * Ts * error_no_aw;                            % integración backward Euler
+    ud_no_aw = (Tf / (Tf + Ts)) * ud_no_aw + (Kd / (Tf + Ts)) * (error_no_aw - e_prev_no_aw);  % derivador con filtro
     e_prev_no_aw = error_no_aw;
     
-    v_calc_no = up_no_aw + ui_no_aw + ud_no_aw;
+    v_calc_no = up_no_aw + ui_no_aw + ud_no_aw;     % señal pedida por el PID
     u_calc_no_aw(k) = v_calc_no;
     
-    v_sat_no = max(min(v_calc_no, V_max), V_min);
+    v_sat_no = max(min(v_calc_no, V_max), V_min);   % NO LINEALIDAD física: saturación del driver
     u_no_aw(k) = v_sat_no;
     
-    ui_hist_no_aw(k) = ui_no_aw; 
-    x_no_aw(:, k+1) = Phi * x_no_aw(:, k) + Gamma * u_no_aw(k);
+    ui_hist_no_aw(k) = ui_no_aw;                    % logging para diagnóstico (gráfico 3)
+    x_no_aw(:, k+1) = Phi * x_no_aw(:, k) + Gamma * u_no_aw(k);   % avance de la planta discreta
     
-    % --- PID CON ANTI-WINDUP ---
+    % --- PID CON ANTI-WINDUP (back-calculation) ---
+    % Eq. (6.x): ui[k+1] = ui[k] + Ki*Ts*e + Kaw*Ts*(u_sat - u_calc)
     y_aw(k) = C_mat * x_aw(:, k);
     error_aw = Referencia(k) - y_aw(k);
     
@@ -101,6 +109,8 @@ for k = 1:N-1
     v_sat = max(min(v_calc, V_max), V_min);
     u_aw(k) = v_sat;
     
+    % Diferencia entre lo entregado y lo pedido: NEGATIVA cuando satura por arriba
+    % -> resta del integrador, descargándolo (anti-windup)
     error_aw_term = v_sat - v_calc;
     ui_aw = ui_aw + Ki * Ts * error_aw + Kaw * Ts * error_aw_term;
     

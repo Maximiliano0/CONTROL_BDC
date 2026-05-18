@@ -16,6 +16,24 @@ El controlador se diseñará y/o implementará en un microcontrolador. Es necesa
 
 En MATLAB: `c2d(G_s, Ts, 'zoh' | 'tustin' | 'impulse' | 'foh' | ...)`.
 
+### Derivación breve de cada método
+
+**Forward Euler:** se aproxima $\dot x(t) \approx \dfrac{x[k+1] - x[k]}{T_s}$. Tomando Laplace: $sX \to (z-1)/T_s\,X$.
+
+*Mapa de estabilidad:* un polo continuo $s$ se mapea a $z = 1 + sT_s$. Para $s = -\sigma$ (polo estable), $z = 1 - \sigma T_s$; si $\sigma T_s > 2$, $|z| > 1$ → **inestable**. Esa es la principal trampa de Forward Euler para sistemas rápidos.
+
+**Backward Euler:** $\dot x(t) \approx \dfrac{x[k] - x[k-1]}{T_s} \Rightarrow s \to (z-1)/(z T_s)$. El semiplano izquierdo se mapea **dentro** de un círculo de radio $1/2$ centrado en $1/2$: estable, pero distorsiona dinámicas rápidas.
+
+**Tustin (bilineal):** integración trapezoidal. La aproximación $s \to \frac{2}{T_s}\frac{z-1}{z+1}$ es la transformación bilineal exacta entre los semiplanos: el eje $j\omega$ se mapea **biunívocamente** sobre el círculo unitario y el semiplano izquierdo sobre el interior. → **preserva estabilidad** siempre.
+
+**ZOH:** discretización exacta del sistema lineal cuando la entrada es constante a trozos:
+
+$$ x[k+1] = e^{A T_s}\,x[k] + \left(\int_0^{T_s} e^{A\tau}\,d\tau\right) B\,u[k]. $$
+
+Para matrices invertibles, $\int_0^{T_s} e^{A\tau}d\tau = A^{-1}(e^{A T_s} - I)$. Es **exacto** entre instantes de muestreo (no aproximación) bajo la hipótesis de entrada con ZOH.
+
+**Impulse Invariant:** iguala la respuesta al impulso muestreada. Adecuado para filtros de procesamiento de señales, no típico en control.
+
 ## 4.3 Mapeo del Plano S al Plano Z
 
 Para un polo $s = \sigma + j\omega$ con muestreo $T_s$:
@@ -41,6 +59,19 @@ El script [S2Z_1_.m](../04_transformacion_s_a_z/S2Z_1_.m) compara la respuesta a
 El método Tustin "comprime" el eje de frecuencias: un polo continuo a $\omega_c$ aparece en discreto a una frecuencia desplazada. Para diseños de filtros con corte preciso se usa **prewarping**:
 
 $$ \omega_{\text{prewarp}} = \frac{2}{T_s}\,\tan\!\left(\frac{\omega_c T_s}{2}\right) $$
+
+### Ejemplo numérico de warping
+
+Filtro pasabajos continuo con $\omega_c = 2\pi \cdot 2 = 12{,}57\,$rad/s y muestreo $f_s = 10\,$Hz ($T_s = 100\,$ms):
+
+$$ \omega_{c,\text{aparente}} = \frac{2}{T_s}\,\tan\!\left(\frac{\omega_c T_s}{2}\right) = 20\,\tan(0{,}6283) \approx 14{,}53\,\text{rad/s} $$
+
+Es decir, sin prewarping el filtro discretizado por Tustin **corta antes** (a $\omega \approx 12{,}57$) que el continuo (que cortaba a $\omega = 14{,}53$ del lado continuo equivalente). Para fijar el corte exacto a 2 Hz aplicamos prewarping invirtiendo la fórmula:
+
+```matlab
+opts = c2dOptions('Method','tustin','PrewarpFrequency', 2*pi*2);
+LPF_z = c2d(LPF_s, Ts, opts);
+```
 
 ## 4.7 Material
 

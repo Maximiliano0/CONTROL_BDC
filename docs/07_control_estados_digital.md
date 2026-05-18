@@ -16,6 +16,18 @@ con $\Phi = e^{A T_s}$ y $\Gamma = \int_0^{T_s} e^{A\tau}\,d\tau\,B$ (ZOH exacto
 
 En MATLAB: `sys_d = c2d(sys_c, Ts, 'zoh')`.
 
+### Fórmula cerrada cuando $A$ es invertible
+
+Si $A$ es no singular,
+
+$$ \int_0^{T_s} e^{A\tau}\,d\tau = A^{-1}\bigl(e^{A T_s} - I\bigr) \;\Rightarrow\; \Gamma = A^{-1}(\Phi - I)\,B. $$
+
+Para el motor BDC 3×3 $A$ **es singular** (la fila de $\dot\theta$ es $[0\;1\;0]$, sin término propio), así que MATLAB usa una **expansión en serie** o la fórmula con matriz aumentada de Van Loan:
+
+$$ \exp\!\left( T_s \begin{bmatrix} A & B \\ 0 & 0\end{bmatrix}\right) = \begin{bmatrix} \Phi & \Gamma \\ 0 & I \end{bmatrix}. $$
+
+Este truco entrega $\Phi$ y $\Gamma$ simultáneamente con un solo `expm`.
+
 ## 7.3 Controlabilidad y Observabilidad Discretas
 
 - **Controlabilidad:** $\mathcal{C} = [\Gamma\;\;\Phi\Gamma\;\;\Phi^2\Gamma\;\dots\;\Phi^{n-1}\Gamma]$, $\mathrm{rank}\,\mathcal{C}=n$.
@@ -57,3 +69,29 @@ El script [pp_control_zrc.m](../07_control_estados_digital/pp_control_zrc.m) ace
 ## 7.9 Material
 
 - [pp_control_zrc.m](../07_control_estados_digital/pp_control_zrc.m)
+
+## 7.10 Ejemplo numérico
+
+Con $M_p = 0{,}10$, $t_p = 1\,$s, $T_s = 10\,$ms y los parámetros del motor real:
+
+$$ \zeta = 0{,}591,\quad \omega_n = 3{,}90\,\text{rad/s},\quad \sigma = 2{,}30,\quad \omega_d = 3{,}14\,\text{rad/s} $$
+
+Polos continuos deseados: $s_{1,2} = -2{,}30 \pm j\,3{,}14$, $s_3 = -23{,}0$.
+
+Mapeo $z_i = e^{s_i T_s}$ con $T_s = 0{,}01$:
+
+$$ z_{1,2} = e^{-0{,}023}\bigl(\cos 0{,}0314 \pm j\sin 0{,}0314\bigr) \approx 0{,}9772 \pm j\,0{,}0307 $$
+
+$$ z_3 = e^{-0{,}230} \approx 0{,}7945 $$
+
+Los tres polos están bien dentro del círculo unitario y cerca de $z=1$ (síntoma de dinámica lenta respecto a $T_s$, lo cual es deseable porque $T_s$ es claramente mucho más rápido que la dinámica del lazo).
+
+La ganancia que devuelve `place` para este caso es del orden de:
+
+$$ K_z \approx [\,0{,}06,\;\; 0{,}25,\;\; 6{,}8\,] $$
+
+y $K_{dc}$ del orden de $6{,}8$ (cercana a $K_{z,3}$ porque la salida coincide con el tercer estado). El voltaje pico simulado queda dentro de los $\pm 24\,$V → **no satura**, lo que valida la elección de $t_p = 1\,$s para esta planta. Si se baja a $t_p = 0{,}1\,$s las ganancias crecen $\sim 100\times$ y el voltaje pico requerido excede largamente la saturación.
+
+## 7.11 Sampling pathológico
+
+El par discreto $(\Phi, \Gamma)$ deja de ser controlable cuando $T_s$ coincide exactamente con un múltiplo del periodo de un modo oscilatorio. Para una planta con polos puramente imaginarios $\pm j\omega_0$, se pierde controlabilidad si $T_s = k\pi/\omega_0$. El motor BDC no presenta modos oscilatorios puros (su par de polos complejos siempre tiene parte real negativa), por lo que el problema no aparece en este curso, pero es importante recordarlo en sistemas resonantes (motores con flexibilidades, brazos robóticos largos, etc.).

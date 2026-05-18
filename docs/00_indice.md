@@ -14,5 +14,7 @@ Planta de referencia: **Motor BDC (Brushed DC Motor)**
 | 5 | PID digital (3×3 — posición) | [05_pid_digital.md](05_pid_digital.md) |
 | 6 | Saturación del actuador y anti-windup (3×3 — posición) | [06_anti_windup.md](06_anti_windup.md) |
 | 7 | Asignación de polos en Z — control digital de estados (3×3 — posición) | [07_control_estados_digital.md](07_control_estados_digital.md) |
+| 8 | Observador de estados (Luenberger) en Z (3×3 — posición) | [08_observador_estados.md](08_observador_estados.md) |
+| 9 | Control LQR discreto (cuadrático óptimo) (3×3 — posición) | [09_control_lqr.md](09_control_lqr.md) |
 
 Cada documento está acoplado al script y/o modelo Simulink correspondiente, ubicado en la carpeta hermana del repositorio raíz.

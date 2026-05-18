@@ -48,7 +48,9 @@ CONTROL_BDC/
 │   ├── 04_transformacion_s_a_z.md
 │   ├── 05_pid_digital.md
 │   ├── 06_anti_windup.md
-│   └── 07_control_estados_digital.md
+│   ├── 07_control_estados_digital.md
+│   ├── 08_observador_estados.md
+│   └── 09_control_lqr.md
 ├── 01_modelado_motor_bdc/               ← Modelo del motor (2×2 velocidad)
 │   ├── bdc_motor_src.m
 │   ├── bdc_motor_sim.slx
@@ -70,8 +72,12 @@ CONTROL_BDC/
 │   └── pid_bdc_z_sim.slx
 ├── 06_anti_windup/                      ← Saturación + back-calculation (3×3 posición)
 │   └── pid_windup_z.m
-└── 07_control_estados_digital/          ← Asignación de polos en Z (3×3 posición)
-    └── pp_control_zrc.m
+├── 07_control_estados_digital/          ← Asignación de polos en Z (3×3 posición)
+│   └── pp_control_zrc.m
+├── 08_observador_estados/               ← Observador Luenberger en Z (3×3 posición)
+│   └── obs_control_z.m
+└── 09_control_lqr/                      ← Control LQR discreto (3×3 posición)
+    └── lqr_bdc_z.m
 ```
 
 ---
@@ -87,6 +93,8 @@ CONTROL_BDC/
 | 5 | PID digital sobre el motor BDC | [`05_pid_digital/`](05_pid_digital/) | [docs/05](docs/05_pid_digital.md) |
 | 6 | Saturación del actuador y anti-windup | [`06_anti_windup/`](06_anti_windup/) | [docs/06](docs/06_anti_windup.md) |
 | 7 | Asignación de polos en Z (control digital de estados) | [`07_control_estados_digital/`](07_control_estados_digital/) | [docs/07](docs/07_control_estados_digital.md) |
+| 8 | Observador de estados (Luenberger) en Z | [`08_observador_estados/`](08_observador_estados/) | [docs/08](docs/08_observador_estados.md) |
+| 9 | Control LQR discreto (cuadrático óptimo) | [`09_control_lqr/`](09_control_lqr/) | [docs/09](docs/09_control_lqr.md) |
 
 ---
 

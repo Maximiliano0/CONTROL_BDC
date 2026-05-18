@@ -38,13 +38,37 @@ El **tercer polo** (no dominante) se elige $s_3 = -10\,\zeta\omega_n$ para no af
 
 Si el par $(A, B)$ es **controlable** ($\mathrm{rank}\,\mathcal{C} = n$), existe $K$ tal que los autovalores de $A - BK$ coinciden con los polos deseados. Se usa `place(A,B,P)`.
 
+### Verificación de controlabilidad
+
+$$ \mathcal{C} = [B\;\; AB\;\; A^2 B] \in \mathbb{R}^{3\times 3} $$
+
+Para el modelo 3×3 del motor BDC, $\mathrm{rank}\,\mathcal{C} = 3$ ⇒ todo polo es asignable. Esto es consecuencia física de que el voltaje $V_a$ excita la corriente, que produce torque, que mueve la velocidad y por tanto la posición.
+
+### Fórmula de Ackermann (alternativa cerrada)
+
+Para $n=3$:
+
+$$ K = [0\;0\;1]\,\mathcal{C}^{-1}\,\alpha_d(A),\qquad \alpha_d(A)=(A-p_1 I)(A-p_2 I)(A-p_3 I) $$
+
+MATLAB usa internamente algoritmos más robustos numéricamente (basados en formas de Schur), pero Ackermann muestra que $K$ es una **expresión cerrada** en términos de los polos y de las matrices del modelo.
+
 ## 2.5 Pre-Compensación $K_{dc}$
 
 Aunque la planta tiene un integrador natural en $\theta$, al cerrar el lazo con $u=-Kx$ ese integrador se mueve y se pierde el seguimiento perfecto. Se compensa con:
 
 $$ K_{dc} = \frac{1}{\mathrm{dcgain}\!\left( C(sI-(A-BK))^{-1}B \right)} $$
 
-de modo que para una referencia escalón $r=1$ se obtenga $\theta_\infty = 1$.
+de modo que para una referencia escalon $r=1$ se obtenga $\theta_\infty = 1$.
+
+### Derivación por teorema del valor final
+
+A lazo cerrado, $\dot{x} = (A-BK)x + B\,K_{dc}\,r$. En estado estacionario con $r$ constante:
+
+$$ 0 = (A-BK)\,x_\infty + B\,K_{dc}\,r \;\Rightarrow\; x_\infty = -(A-BK)^{-1}B\,K_{dc}\,r $$
+
+$$ y_\infty = C x_\infty = \underbrace{-C(A-BK)^{-1}B}_{=\,\mathrm{dcgain}}\,K_{dc}\,r $$
+
+Forzando $y_\infty = r$ resulta $K_{dc} = 1/\mathrm{dcgain}$. **Limitación crítica:** este $K_{dc}$ se calcula con el modelo nominal; si los parámetros reales difieren (envejecimiento, temperatura, fricción variable) habrá error de seguimiento. La solución robusta es añadir **acción integral** (que el PID del cap. 05 incorpora de forma natural).
 
 ## 2.6 Ley de Control
 
@@ -58,3 +82,30 @@ El script grafica $u(t)$ porque en la práctica el voltaje aplicado al motor est
 
 - [pp_control_src.m](../02_control_espacio_estados/pp_control_src.m)
 - [pp_control_sim.slx](../02_control_espacio_estados/pp_control_sim.slx)
+
+## 2.9 Ejemplo numérico (parámetros didácticos)
+
+Con $M_p = 0{,}40$ y $t_p = 0{,}1\,$s:
+
+$$ \zeta = \frac{-\ln 0{,}40}{\sqrt{\pi^2 + \ln^2 0{,}40}} \approx 0{,}2800,\qquad
+\omega_n = \frac{\pi}{0{,}1 \cdot \sqrt{1-0{,}28^2}} \approx 32{,}74\,\text{rad/s} $$
+
+Polos deseados:
+
+$$ s_{1,2} = -9{,}17 \pm j\,31{,}43,\qquad s_3 = -10 \cdot 9{,}17 = -91{,}7 $$
+
+Matriz de estado en lazo abierto (sustituyendo $R_a=L_a=0{,}5$, $K_b=0{,}01$, $J_e=0{,}01$, $B_e=0{,}1$):
+
+$$ A = \begin{bmatrix} -1 & -0{,}02 & 0 \\ 1 & -10 & 0 \\ 0 & 1 & 0 \end{bmatrix},\quad B = \begin{bmatrix} 2 \\ 0 \\ 0 \end{bmatrix} $$
+
+Ejecutando `K = place(A, B, [s1 s2 s3])` se obtiene aproximadamente
+
+$$ K \approx [\,50{,}9,\;\; 4{,}11\!\times\!10^3,\;\; 4{,}30\!\times\!10^4\,] $$
+
+y $K_{dc} \approx 4{,}30\!\times\!10^4$ (coincide con $K_3$ porque la salida es directamente el estado 3).
+
+### Lectura ingenieril del resultado
+
+- $K_1$ pequeno: la corriente apenas necesita ser corregida (la planta eléctrica es ya estable y rápida).
+- $K_2$ y $K_3$ grandes: la mayor parte de la ley de control se basa en velocidad y posición, lo cual es esperable cuando el objetivo es regular $\theta$.
+- El pico de $u(t)$ resultante supera 100 V (ver gráfico) → con un puente H de $\pm 24\,$V este diseño **saturaría**. Justamente esa es la motivación del capítulo 06.
