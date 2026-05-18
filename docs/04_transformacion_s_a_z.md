@@ -58,7 +58,7 @@ El script [S2Z_1_.m](../04_transformacion_s_a_z/S2Z_1_.m) compara la respuesta a
 
 El método Tustin "comprime" el eje de frecuencias: un polo continuo a $\omega_c$ aparece en discreto a una frecuencia desplazada. Para diseños de filtros con corte preciso se usa **prewarping**:
 
-$$ \omega_{\text{prewarp}} = \frac{2}{T_s} \cdot \tan\!\left(\frac{\omega_c T_s}{2}\right) $$
+$$ \omega_{\text{prewarp}} = \frac{2}{T_s} \cdot \tan\ \left(\frac{\omega_c T_s}{2}\right) $$
 
 ### Ejemplo numérico de warping
 

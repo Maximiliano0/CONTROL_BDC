@@ -75,7 +75,7 @@ $$
 El problema "ubicar polos de $\Phi - L \cdot C_d$" es **dual** a "ubicar polos de $\Phi - \Gamma K_z$":
 
 $$
-\mathrm{eig}(\Phi - L \cdot C_d) \;=\; \mathrm{eig}\bigl((\Phi - L \cdot C_d)^T\bigr) \;=\; \mathrm{eig}(\Phi^T - C_d^T \cdot L^T)
+\mathrm{eig}(\Phi - L \cdot C_d) \=\ \mathrm{eig}\bigl((\Phi - L \cdot C_d)^T\bigr) \=\ \mathrm{eig}(\Phi^T - C_d^T \cdot L^T)
 $$
 
 Entonces se puede usar `place` sobre el sistema dual:

@@ -21,6 +21,22 @@
 %   - LQR (B) "barato en u"  : R bajo  → respuesta rápida, mucho voltaje.
 %   - LQR (C) "caro en u"    : R alto  → respuesta suave, poco voltaje.
 %   - Pole-placement cap. 07 : referencia visual.
+% -------------------------------------------------------------------------
+% LEYENDA DE IMPLEMENTACIÓN
+%   [PC]  : se ejecuta off-line en MATLAB (diseño/sintonía/validación).
+%   [MCU] : pertenece al algoritmo que corre en el microcontrolador a
+%           cada interrupción de muestreo (cada Ts segundos).
+%
+% Todo el cálculo de Q, R, dlqr/DARE y de las ganancias K_A, K_B, K_C, Kdc
+% es [PC]: SOLO se hace una vez. Una vez elegida la sintonía (por ejemplo
+% K_A y Kdc_A), el firmware del [MCU] ejecuta en cada ISR exactamente lo
+% mismo que el pole-placement del cap. 07:
+%   [MCU]  x[k] = leer_estados();                 % (ia, w, theta)
+%   [MCU]  u[k] = -K*x[k] + Kdc*r[k];             % ley LQR
+%   [MCU]  u[k] = saturar(u[k], Umin, Umax);
+%   [MCU]  aplicar_PWM(u[k]);
+% (La función local `sim_loop` modela esto: las líneas marcadas como
+%  [MCU] dentro de ella son las que se traducen a código C.)
 % =========================================================================
 
 clear; clc; close all;
@@ -196,15 +212,15 @@ report('Pole-placement',   y_pp, u_pp, [],   t_sim, Ref_rad);
 function [y, u, Jacum] = sim_loop(Phi, Gamma, Cd, K, Kdc, Ref, umin, umax)
     n = size(Phi,1);  N = length(Ref);
     x = zeros(n, N);  y = zeros(1, N);  u = zeros(1, N);
-    Q_ref = diag([1/5^2, 1/200^2, 1/deg2rad(20)^2]);   % mismos pesos para reportar J
+    Q_ref = diag([1/5^2, 1/200^2, 1/deg2rad(20)^2]);   % [PC] pesos para reportar J
     R_ref = 1/24^2;
     Jacum = zeros(1, N);
     for k = 1:N-1
-        y(k)     = Cd * x(:,k);
-        u_calc   = -K * x(:,k) + Kdc * Ref(k);
-        u(k)     = max(min(u_calc, umax), umin);
-        x(:,k+1) = Phi * x(:,k) + Gamma * u(k);
-        Jacum(k+1) = Jacum(k) + x(:,k)'*Q_ref*x(:,k) + u(k)*R_ref*u(k);
+        y(k)     = Cd * x(:,k);                                  % [MCU] leer sensores
+        u_calc   = -K * x(:,k) + Kdc * Ref(k);                   % [MCU] ley LQR u = -K*x + Kdc*r
+        u(k)     = max(min(u_calc, umax), umin);                 % [MCU] saturación por software
+        x(:,k+1) = Phi * x(:,k) + Gamma * u(k);                  % [PC]  modelo del motor (la planta real en HW)
+        Jacum(k+1) = Jacum(k) + x(:,k)'*Q_ref*x(:,k) + u(k)*R_ref*u(k); % [PC] métrica de coste off-line
     end
     y(N) = Cd * x(:,N);   u(N) = u(N-1);
 end

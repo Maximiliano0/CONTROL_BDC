@@ -26,6 +26,20 @@
 % Principio de separación: Kz y L se diseñan por separado; los polos del
 % sistema completo son la unión de los polos de (Phi - Gamma*Kz) y de
 % (Phi - L*Cd).
+% -------------------------------------------------------------------------
+% LEYENDA DE IMPLEMENTACIÓN
+%   [PC]  : se ejecuta off-line en MATLAB (diseño/sintonía/validación).
+%   [MCU] : pertenece al algoritmo que corre en el microcontrolador a
+%           cada interrupción de muestreo (cada Ts segundos).
+%
+% Constantes [PC] que se cargan en el firmware: Phi, Gamma, Cd, Kz, L, Kdc.
+% En cada ISR el microcontrolador ejecuta SOLO el observador + la ley
+% de control (el motor real es la "planta"):
+%   [MCU]  y[k]      = leer_encoder();                          % única medición
+%   [MCU]  u[k]      = -Kz*xhat[k] + Kdc*r[k];                  % control con estado estimado
+%   [MCU]  aplicar_PWM(u[k]);
+%   [MCU]  xhat[k+1] = Phi*xhat[k] + Gamma*u[k]
+%                   + L*(y[k] - Cd*xhat[k]);                    % observador (predictor)
 % =========================================================================
 
 clear; clc; close all;
@@ -37,9 +51,9 @@ disp('========================================================================='
 %% 1. PARÁMETROS CONFIGURABLES POR EL USUARIO
 Mp           = 0.10;   % Sobreimpulso deseado del CONTROLADOR (10 %)
 tp           = 1;      % Tiempo pico deseado del CONTROLADOR (s)
-Ts           = 0.01;   % Tiempo de muestreo (s)  -> fs = 100 Hz
+Ts           = 0.001;  % Tiempo de muestreo (s)  -> fs = 1000 Hz
 Ref_grados   = 10;     % Referencia de posición (Grados)
-factor_obs   = 5;      % Polos del observador <factor_obs> veces más rápidos
+factor_obs   = 3;      % Polos del observador <factor_obs> veces más rápidos
 x0_real      = [0; 0; 0];          % Estado inicial REAL del motor
 x0_hat       = [0; 0; deg2rad(2)]; % Estado inicial ESTIMADO (con error)
 
@@ -88,7 +102,7 @@ sigma = zeta * wn;
 wd    = wn * sqrt(1 - zeta^2);
 
 % Tercer polo 10x más rápido para forzar que los polos dominantes sean el par complejo
-s_ctrl = [-sigma + 1i*wd, -sigma - 1i*wd, -10*sigma];
+s_ctrl = [-sigma + 1i*wd, -sigma - 1i*wd, -5*sigma];
 P_ctrl = exp(s_ctrl * Ts);
 
 % Asignación de polos en lazo cerrado: u = -Kz*x  ->  (Phi - Gamma*Kz)
@@ -104,8 +118,13 @@ fprintf('Kz   = [%.4f, %.4f, %.4f]\n', Kz(1), Kz(2), Kz(3));
 fprintf('Kdc  = %.4f\n\n', Kdc);
 
 %% 5. POLOS DESEADOS DEL OBSERVADOR (más rápidos que el controlador)
-s_obs = factor_obs * s_ctrl;     % mismo patrón, pero "factor_obs" veces más rápido
-P_obs = exp(s_obs * Ts);
+% Sólo aceleramos los dos modos LENTOS (mecánico + integrador de posición).
+% El modo ELÉCTRICO (τe = La/Ra ≈ 0.7 ms) se deja en su ubicación natural:
+% pedirle al observador que estime ia más rápido que su propia dinámica
+% requiere L gigantes (cientos de miles) y vuela el esfuerzo de control.
+z_elec = exp(-(Ra/La) * Ts);                   % polo eléctrico natural en Z
+s_obs_dom = factor_obs * [-sigma + 1i*wd, -sigma - 1i*wd];
+P_obs = [exp(s_obs_dom * Ts), z_elec];
 
 % Diseño por dualidad: L = place(Phi', Cd', P_obs)'
 L = place(Phi', Cd', P_obs).';
@@ -142,21 +161,23 @@ u_obs  = zeros(1, N);
 y_meas = zeros(1, N);
 
 for k = 1:N-1
-    % --- (A) ideal: realimentamos el estado real ---
-    u_ideal(k)      = -Kz * x_ideal(:,k) + Kdc * Ref(k);
-    x_ideal(:,k+1)  = Phi * x_ideal(:,k) + Gamma * u_ideal(k);
+    % --- (A) ideal: realimentamos el estado real (NO REALIZABLE en HW) ---
+    %     Sirve como referencia teórica: requiere medir ia y w, cosa que
+    %     en el motor real no hacemos. Todo este bloque es [PC].
+    u_ideal(k)      = -Kz * x_ideal(:,k) + Kdc * Ref(k);                    % [PC]
+    x_ideal(:,k+1)  = Phi * x_ideal(:,k) + Gamma * u_ideal(k);              % [PC]
 
-    % --- (B) observador: realimentamos el estado estimado ---
-    y_meas(k)       = Cd * x_real(:,k);                 % única medición: posición (encoder)
-    u_obs(k)        = -Kz * xhat(:,k) + Kdc * Ref(k);   % ley de control con xhat
-    % Planta real evoluciona con la entrada aplicada:
-    x_real(:,k+1)   = Phi * x_real(:,k)  + Gamma * u_obs(k);
+    % --- (B) observador: realimentamos el estado estimado (CASO REAL) ---
+    y_meas(k)       = Cd * x_real(:,k);                                     % [MCU] leer encoder (única medición)
+    u_obs(k)        = -Kz * xhat(:,k) + Kdc * Ref(k);                       % [MCU] ley de control u = -Kz*xhat + Kdc*r
+    % Planta real evoluciona con la entrada aplicada (esto NO está en el firmware):
+    x_real(:,k+1)   = Phi * x_real(:,k)  + Gamma * u_obs(k);                % [PC]  modelo del motor físico
     % Observador (predictor): Eq. (8.x) del cap. 08
     %   xhat[k+1] = Phi*xhat[k] + Gamma*u[k] + L*(y[k] - Cd*xhat[k])
     % El término (y - Cd*xhat) es la INNOVACIÓN; L pondera cuánto
     % corregir cada estado estimado a partir de esa innovación.
-    xhat(:,k+1)     = Phi * xhat(:,k)    + Gamma * u_obs(k) ...
-                    + L * (y_meas(k) - Cd * xhat(:,k));
+    xhat(:,k+1)     = Phi * xhat(:,k)    + Gamma * u_obs(k) ...             % [MCU] actualizar estado estimado
+                    + L * (y_meas(k) - Cd * xhat(:,k));                     % [MCU] (corre en la ISR del timer)
 end
 y_meas(N)  = Cd * x_real(:,N);
 u_ideal(N) = u_ideal(N-1);

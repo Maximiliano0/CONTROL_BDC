@@ -12,6 +12,23 @@
 % Salidas    : Parámetros C(z) (Kp, Ki, Kd, Tf), márgenes, respuesta al
 %              escalón, bloques individuales para usar en pid_bdc_z_sim.slx.
 % Doc        : docs/05_pid_digital.md
+% -------------------------------------------------------------------------
+% LEYENDA DE IMPLEMENTACIÓN
+%   [PC]  : se ejecuta off-line en MATLAB (diseño/sintonía/validación).
+%   [MCU] : pertenece al algoritmo que corre en el microcontrolador a
+%           cada interrupción de muestreo (cada Ts segundos).
+%
+% En este script TODO es [PC]: el objetivo es OBTENER los coeficientes
+% (Kp, Ki, Kd, Tf) que luego se programan en el microcontrolador. Lo único
+% que se ejecuta en el [MCU] es la ECUACIÓN RECURSIVA del PIDF discreto:
+%
+%   [MCU]  e[k]  = r[k] - y[k];
+%   [MCU]  P[k]  = Kp * e[k];
+%   [MCU]  I[k]  = I[k-1] + Ki*Ts * e[k];                 % integral
+%   [MCU]  D[k]  = (Tf/(Tf+Ts))*D[k-1] +
+%                 (Kd/(Tf+Ts))*(e[k]-e[k-1]);            % derivativo filtrado
+%   [MCU]  u[k]  = saturar(P[k] + I[k] + D[k], Umin, Umax);
+%   [MCU]  aplicar_PWM(u[k]);
 % =========================================================================
 
 clear; clc; close all;
@@ -22,8 +39,8 @@ disp('========================================================================='
 
 %% 1. ESPECIFICACIONES DE DISEÑO
 disp('--- 1. Especificaciones de Diseño ---');
-Mp = 0.30;  % Sobreimpulso máximo (30%)
-tp = 100;   % Tiempo pico deseado (s)
+Mp = 0.40;  % Sobreimpulso máximo (40%)
+tp = 10;   % Tiempo pico deseado (s)
 
 % Cálculo de parámetros dominantes continuos a lazo cerrado
 zeta = -log(Mp) / sqrt(pi^2 + (log(Mp))^2);
@@ -68,11 +85,9 @@ B = [1/La ; 0 ; 0]; C = [0, 0, 1]; D = 0;
 sys_planta_s = ss(A, B, C, D);
 sys_planta_z = c2d(sys_planta_s, Ts, 'zoh');
 
-%%t_sim = 0:Ts:100;
-%%[y_d, ~] = step(sys_planta_z, t_sim);
-%%stairs(t_sim, y_d, 'r', 'LineWidth', 1.5, 'DisplayName', 'Discrete G(z) (ZOH staircase)');
-
 %% 4. SÍNTESIS DEL CONTROLADOR PID DISCRETO (CON FILTRO CAUSAL)
+% [PC] Esta sintonía corre UNA SOLA VEZ en MATLAB. Sus salidas
+%      (Kp, Ki, Kd, Tf) son las constantes que se compilan dentro del [MCU].
 disp(' ');
 disp('--- 4. Controlador PID Discreto (Causal) ---');
 opts = pidtuneOptions('PhaseMargin', PM_deg, 'DesignFocus', 'reference-tracking');

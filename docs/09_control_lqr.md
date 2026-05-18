@@ -17,7 +17,7 @@ El **regulador lineal cuadrático** (Linear Quadratic Regulator, **LQR**) reform
 Para el sistema $x[k+1] = \Phi \cdot x[k] + \Gamma \cdot u[k]$ se define el costo de horizonte infinito:
 
 $$
-\boxed{\;J = \sum_{k=0}^{\infty}\Bigl( x[k]^T \cdot Q \cdot x[k] + u[k]^T \cdot R \cdot u[k] \Bigr)\;}
+\boxed{\ J = \sum_{k=0}^{\infty}\Bigl( x[k]^T \cdot Q \cdot x[k] + u[k]^T \cdot R \cdot u[k] \Bigr)\ }
 $$
 
 con:
@@ -41,13 +41,13 @@ $$
 con
 
 $$
-K = \bigl(R + \Gamma^T P \cdot \Gamma\bigr)^{-1} \cdot \Gamma^T P \cdot \Phi,
+K = \bigl(R + \Gamma^T P \cdot \Gamma\bigr)^{-1} \cdot \Gamma^T P \cdot \Phi
 $$
 
 donde $P$ es la **única solución simétrica definida positiva** de la **Ecuación Algebraica de Riccati Discreta** (DARE):
 
 $$
-P = \Phi^T P \cdot \Phi \;-\; \Phi^T P \cdot \Gamma \cdot \bigl(R + \Gamma^T P \cdot \Gamma\bigr)^{-1} \cdot \Gamma^T P \cdot \Phi \;+\; Q.
+P = \Phi^T P \cdot \Phi \ -\  \Phi^T P \cdot \Gamma \cdot \bigl(R + \Gamma^T P \cdot \Gamma\bigr)^{-1} \cdot \Gamma^T P \cdot \Phi \ +\  Q
 $$
 
 En MATLAB se resuelve con una sola línea:
@@ -62,7 +62,7 @@ En MATLAB se resuelve con una sola línea:
 
 Definiendo la **función de valor** $V_k(x) = x^T P_k x$ (forma cuadrática por la naturaleza del costo), Bellman a tiempo inverso establece:
 
-$$ V_k(x) = \min_u\Bigl\{ x^T Q x + u^T R u + V_{k+1}(\Phi x + \Gamma u) \Bigr\}. $$
+$$ V_k(x) = \min_u\Bigl\lbrace x^T Q x + u^T R u + V_{k+1}(\Phi x + \Gamma u) \Bigr\rbrace. $$
 
 Sustituyendo $V_{k+1} = x^T P_{k+1} x$, expandiendo y derivando respecto a $u$:
 
@@ -95,9 +95,9 @@ Para el motor BDC 3×3 con los parámetros reales se cumplen las tres.
 La forma más sistemática de elegir $Q$ y $R$ es la **regla de Bryson**: tomar los valores **máximos tolerables** de cada estado y de la entrada, y construir matrices **diagonales** que normalicen cada término del costo a $[0, 1]$.
 
 $$
-Q = \mathrm{diag}\!\left(\frac{1}{x_{1,\max}^2},\,\frac{1}{x_{2,\max}^2},\,\ldots\right),
+Q = \mathrm{diag}\ \left(\frac{1}{x_{1,\max}^2},\ \frac{1}{x_{2,\max}^2}\ \ldots\right),
 \qquad
-R = \mathrm{diag}\!\left(\frac{1}{u_{1,\max}^2},\,\ldots\right)
+R = \mathrm{diag}\ \left(\frac{1}{u_{1,\max}^2},\ \ldots\right)
 $$
 
 Para el motor BDC, valores razonables:
@@ -119,15 +119,19 @@ A partir de esta línea base se afina iterativamente:
 
 El LQR puro es un **regulador** ($r=0$). Para que el sistema siga una referencia $r\ne 0$ se aplican las mismas técnicas del cap. 07:
 
-1. **Pre-compensación $K_{dc}$** (estática):
+**1. Pre-compensación $K_{dc}$ (estática).**
 
-   $$ K_{dc} = \frac{1}{C_d \cdot (I - (\Phi - \Gamma K))^{-1} \cdot \Gamma},\qquad u = -K \cdot x + K_{dc} \cdot r. $$
+$$ K_{dc} = \frac{1}{C_d \cdot (I - (\Phi - \Gamma K))^{-1} \cdot \Gamma},\qquad u = -K \cdot x + K_{dc} \cdot r. $$
 
-   Simple, pero sensible a errores de modelo y a perturbaciones constantes.
+Simple, pero sensible a errores de modelo y a perturbaciones constantes.
 
-2. **LQR con acción integral** (LQI): se aumenta el estado con $x_i[k+1] = x_i[k] + (r - y[k])$ y se aplica LQR al sistema aumentado de orden $n+1$. Garantiza error cero en estado estacionario y rechazo de perturbaciones.
+**2. LQR con acción integral (LQI).** Se aumenta el estado con el integrador del error:
 
-3. **LQR servo** con ganancia precalculada para la referencia (state-feedforward).
+$$ x_i[k+1] = x_i[k] + \bigl(r - y[k]\bigr), $$
+
+y se aplica LQR al sistema aumentado de orden $n+1$. Garantiza error cero en estado estacionario y rechazo de perturbaciones constantes.
+
+**3. LQR servo** con ganancia precalculada para la referencia (state-feedforward).
 
 En este capítulo usamos la opción 1 para alinearnos con la metodología del cap. 07 y poder comparar.
 
@@ -177,7 +181,7 @@ Para cada uno simula el lazo con **saturación de actuador** ($\pm 24\ \text{V}$
 3. Costo acumulado $J(t)$ (evaluado con $Q,R$ baseline para una comparación justa).
 4. Polos en el plano Z.
 
-Por consola se reportan $M_p$, $t_p$, $|u|_{\max}$ y $J_\infty$ de cada estrategia.
+Por consola se reportan $M_p$, $t_p$, $\lvert u\rvert_{\max}$ y $J_\infty$ de cada estrategia.
 
 ## 9.10 Extensiones (no implementadas aquí)
 
@@ -193,11 +197,11 @@ Por consola se reportan $M_p$, $t_p$, $|u|_{\max}$ y $J_\infty$ de cada estrateg
 
 Con los parámetros del motor real, $T_s = 10\ \text{ms}$ y los topes de Bryson del script ($i_{a,\max}=5$ A, $\omega_{\max}=200$ rad/s, $\theta_{\max}=20° \approx 0.349$ rad, $u_{\max}=24$ V):
 
-$$ Q = \mathrm{diag}\bigl(1/25,\; 1/40{,}000,\; 1/0.122\bigr),\qquad R = 1/576. $$
+$$ Q = \mathrm{diag}\bigl(1/25,\ 1/40{,}000,\ 1/0.122\bigr),\qquad R = 1/576. $$
 
 `dlqr` arroja un $K$ con **tercera componente dominante** (la penalización relativa sobre $\theta$ es la mayor de las tres en $Q$):
 
-$$ K_{\text{LQR}} \approx [\,k_1,\;\; k_2,\;\; k_3\,],\qquad |k_3| \gg |k_2| > |k_1|, $$
+$$ K_{\text{LQR}} \approx [\ k_1,\ \ k_2,\ \ k_3\,],\qquad |k_3| \gg |k_2| > |k_1|, $$
 
 con autovalores en lazo cerrado todos dentro del círculo unitario (estabilidad garantizada por construcción). El script imprime los valores exactos por consola.
 

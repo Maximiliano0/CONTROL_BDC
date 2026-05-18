@@ -40,7 +40,7 @@ Dadas $M_p$ y $t_p$ deseados:
 
 $$ \zeta = \frac{-\ln M_p}{\sqrt{\pi^2+\ln^2 M_p}},\quad \omega_n = \frac{\pi}{t_p\sqrt{1-\zeta^2}} $$
 
-$$ \omega_c \approx \omega_n,\qquad \mathrm{PM} \approx \arctan\!\left(\frac{2\zeta}{\sqrt{\sqrt{1+4\zeta^4}-2\zeta^2}}\right) $$
+$$ \omega_c \approx \omega_n,\qquad \mathrm{PM} \approx \arctan\ \left(\frac{2\zeta}{\sqrt{\sqrt{1+4\zeta^4}-2\zeta^2}}\right) $$
 
 `pidtune(sys_planta_z, 'PIDF', wc, opts)` ajusta el PID en el dominio z para alcanzar esa frecuencia de cruce y margen de fase, sintetizando $K_p, K_i, K_d, T_f$.
 

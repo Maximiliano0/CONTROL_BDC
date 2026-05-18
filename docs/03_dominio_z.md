@@ -78,7 +78,7 @@ $$ H_{\text{ZOH}}(s) = \frac{1 - e^{-sT_s}}{s}. $$
 
 La cadena "ZOH + planta $G(s)$ + muestreador ideal" tiene equivalente discreto:
 
-$$ \boxed{\;G_{\text{ZOH}}(z) = (1 - z^{-1}) \cdot \mathcal{Z}\!\left\{\frac{G(s)}{s}\right\}\;} $$
+$$ \boxed{\;G_{\text{ZOH}}(z) = (1 - z^{-1}) \cdot \mathcal{Z}\!\left\lbrace \frac{G(s)}{s} \right\rbrace\;} $$
 
 donde $\mathcal{Z}\{\cdot\}$ denota la transformación s→z por muestreo (`c2d` en MATLAB con `'zoh'`).
 
@@ -94,7 +94,7 @@ Para que un polo continuo en $s = -100$ (rápido) se mapee a $z$ "saludablemente
 
 ## 3.8 Estabilidad de Jury (criterio algebraico)
 
-Análogo discreto del criterio de Routh–Hurwitz. Para $p(z) = a_n z^n + \cdots + a_0$, el sistema es estable sii:
+Análogo discreto del criterio de Routh–Hurwitz. Para $p(z) = a_n z^n + \cdots + a_0$, el sistema es estable si:
 
 1. $p(1) > 0$
 2. $(-1)^n \cdot p(-1) > 0$

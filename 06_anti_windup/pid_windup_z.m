@@ -13,6 +13,16 @@
 % Salidas    : Figura con 4 subplots comparando respuesta sin/con AW,
 %              esfuerzo de control, error e integrador.
 % Doc        : docs/06_anti_windup.md
+% -------------------------------------------------------------------------
+% LEYENDA DE IMPLEMENTACIÓN
+%   [PC]  : se ejecuta off-line en MATLAB (diseño/sintonía/validación).
+%   [MCU] : pertenece al algoritmo que corre en el microcontrolador a
+%           cada interrupción de muestreo (cada Ts segundos).
+%
+% En el bucle de simulación de la sección 4 se distinguen claramente las
+% líneas marcadas como [MCU] (cómputo del PID + saturación + back-
+% calculation) de las marcadas como [PC] (modelo del motor `Phi*x+Gamma*u`,
+% que en la realidad NO se programa: es el motor físico el que evoluciona).
 % =========================================================================
 
 clear; clc; close all;
@@ -82,49 +92,53 @@ x_aw = zeros(3, N); y_aw = zeros(1, N); u_aw = zeros(1, N); u_calc_aw = zeros(1,
 ui_aw = 0; ud_aw = 0; e_prev_aw = 0; ui_hist_aw = zeros(1, N); 
 
 %% 4. BUCLE DE SIMULACIÓN NO LINEAL
+% Cada iteración del bucle equivale a UNA interrupción de muestreo del
+% microcontrolador (período Ts). Las líneas [MCU] son las que se traducen
+% a código C dentro de la ISR del timer; las líneas [PC] modelan al motor
+% (en hardware real las ejecuta la planta física, no el firmware).
 for k = 1:N-1
     
     % --- PID SIN ANTI-WINDUP ---
     % Eq. (5.x): u[k] = up[k] + ui[k] + ud[k]
-    y_no_aw(k) = C_mat * x_no_aw(:, k);
-    error_no_aw = Referencia(k) - y_no_aw(k);
+    y_no_aw(k) = C_mat * x_no_aw(:, k);                                     % [MCU] leer encoder/ADC -> y[k]
+    error_no_aw = Referencia(k) - y_no_aw(k);                               % [MCU] e[k] = r[k] - y[k]
     
-    up_no_aw = Kp * error_no_aw;                                            % rama proporcional
-    ui_no_aw = ui_no_aw + Ki * Ts * error_no_aw;                            % integración backward Euler
-    ud_no_aw = (Tf / (Tf + Ts)) * ud_no_aw + (Kd / (Tf + Ts)) * (error_no_aw - e_prev_no_aw);  % derivador con filtro
-    e_prev_no_aw = error_no_aw;
+    up_no_aw = Kp * error_no_aw;                                            % [MCU] rama proporcional
+    ui_no_aw = ui_no_aw + Ki * Ts * error_no_aw;                            % [MCU] integración (acumulador)
+    ud_no_aw = (Tf / (Tf + Ts)) * ud_no_aw + (Kd / (Tf + Ts)) * (error_no_aw - e_prev_no_aw);  % [MCU] derivador filtrado
+    e_prev_no_aw = error_no_aw;                                             % [MCU] guardar e[k-1]
     
-    v_calc_no = up_no_aw + ui_no_aw + ud_no_aw;     % señal pedida por el PID
+    v_calc_no = up_no_aw + ui_no_aw + ud_no_aw;                             % [MCU] señal pedida por el PID
     u_calc_no_aw(k) = v_calc_no;
     
-    v_sat_no = max(min(v_calc_no, V_max), V_min);   % NO LINEALIDAD física: saturación del driver
-    u_no_aw(k) = v_sat_no;
+    v_sat_no = max(min(v_calc_no, V_max), V_min);                           % [MCU] saturación por software (o la hace el driver)
+    u_no_aw(k) = v_sat_no;                                                  % [MCU] escribir PWM
     
-    ui_hist_no_aw(k) = ui_no_aw;                    % logging para diagnóstico (gráfico 3)
-    x_no_aw(:, k+1) = Phi * x_no_aw(:, k) + Gamma * u_no_aw(k);   % avance de la planta discreta
+    ui_hist_no_aw(k) = ui_no_aw;                                            % [PC]  logging para diagnóstico (gráfico 3)
+    x_no_aw(:, k+1) = Phi * x_no_aw(:, k) + Gamma * u_no_aw(k);             % [PC]  modelo del motor (la planta física en HW)
     
     % --- PID CON ANTI-WINDUP (back-calculation) ---
     % Eq. (6.x): ui[k+1] = ui[k] + Ki*Ts*e + Kaw*Ts*(u_sat - u_calc)
-    y_aw(k) = C_mat * x_aw(:, k);
-    error_aw = Referencia(k) - y_aw(k);
+    y_aw(k) = C_mat * x_aw(:, k);                                           % [MCU] leer sensor
+    error_aw = Referencia(k) - y_aw(k);                                     % [MCU]
     
-    up_aw = Kp * error_aw;
-    ud_aw = (Tf / (Tf + Ts)) * ud_aw + (Kd / (Tf + Ts)) * (error_aw - e_prev_aw);
-    e_prev_aw = error_aw;
+    up_aw = Kp * error_aw;                                                  % [MCU]
+    ud_aw = (Tf / (Tf + Ts)) * ud_aw + (Kd / (Tf + Ts)) * (error_aw - e_prev_aw); % [MCU]
+    e_prev_aw = error_aw;                                                   % [MCU]
     
-    v_calc = up_aw + ui_aw + ud_aw;
+    v_calc = up_aw + ui_aw + ud_aw;                                         % [MCU] señal pedida
     u_calc_aw(k) = v_calc;
     
-    v_sat = max(min(v_calc, V_max), V_min);
-    u_aw(k) = v_sat;
+    v_sat = max(min(v_calc, V_max), V_min);                                 % [MCU] saturación
+    u_aw(k) = v_sat;                                                        % [MCU] escribir PWM
     
     % Diferencia entre lo entregado y lo pedido: NEGATIVA cuando satura por arriba
     % -> resta del integrador, descargándolo (anti-windup)
-    error_aw_term = v_sat - v_calc;
-    ui_aw = ui_aw + Ki * Ts * error_aw + Kaw * Ts * error_aw_term;
+    error_aw_term = v_sat - v_calc;                                         % [MCU] término de back-calculation
+    ui_aw = ui_aw + Ki * Ts * error_aw + Kaw * Ts * error_aw_term;          % [MCU] integrador con anti-windup
     
-    ui_hist_aw(k) = ui_aw; 
-    x_aw(:, k+1) = Phi * x_aw(:, k) + Gamma * u_aw(k);
+    ui_hist_aw(k) = ui_aw;                                                  % [PC]  logging
+    x_aw(:, k+1) = Phi * x_aw(:, k) + Gamma * u_aw(k);                      % [PC]  modelo del motor
 end
 
 % Acomodo del último índice

@@ -50,7 +50,10 @@ CONTROL_BDC/
 │   ├── 06_anti_windup.md
 │   ├── 07_control_estados_digital.md
 │   ├── 08_observador_estados.md
-│   └── 09_control_lqr.md
+│   ├── 09_control_lqr.md
+│   ├── 25_1_windowing.md
+│   ├── 25_2_convolucion.md
+│   └── 25_3_fir_iir.md
 ├── 01_modelado_motor_bdc/               ← Modelo del motor (2×2 velocidad)
 │   ├── bdc_motor_src.m
 │   ├── bdc_motor_sim.slx
@@ -76,8 +79,21 @@ CONTROL_BDC/
 │   └── pp_control_zrc.m
 ├── 08_observador_estados/               ← Observador Luenberger en Z (3×3 posición)
 │   └── obs_control_z.m
-└── 09_control_lqr/                      ← Control LQR discreto (3×3 posición)
-    └── lqr_bdc_z.m
+├── 09_control_lqr/                      ← Control LQR discreto (3×3 posición)
+│   └── lqr_bdc_z.m
+└── 255_filtros_digitales/                ← Complemento DSP en Python (filtrado de sensores)
+    ├── Windowing_1_/                     ← 25.1 Ventaneo y leakage espectral
+    │   ├── signal_test.py
+    │   ├── windowing.py
+    │   └── different_windows.py
+    ├── Convolution_2_/                   ← 25.2 Convolución discreta (FIR manual)
+    │   ├── convolve.py
+    │   ├── limited_buffer.py
+    │   ├── my_convolution.py
+    │   └── zero_pad.py
+    └── FIR_IIR_3_/                       ← 25.3 Diseño de filtros FIR e IIR
+        ├── fir.py
+        └── iir.py
 ```
 
 ---
@@ -95,6 +111,9 @@ CONTROL_BDC/
 | 7 | Asignación de polos en Z (control digital de estados) | [`07_control_estados_digital/`](07_control_estados_digital/) | [docs/07](docs/07_control_estados_digital.md) |
 | 8 | Observador de estados (Luenberger) en Z | [`08_observador_estados/`](08_observador_estados/) | [docs/08](docs/08_observador_estados.md) |
 | 9 | Control LQR discreto (cuadrático óptimo) | [`09_control_lqr/`](09_control_lqr/) | [docs/09](docs/09_control_lqr.md) |
+| 25.1 | DSP — Ventaneo (windowing) y leakage espectral | [`255_filtros_digitales/Windowing_1_/`](255_filtros_digitales/Windowing_1_/) | [docs/25.1](docs/25_1_windowing.md) |
+| 25.2 | DSP — Convolución discreta (FIR manual) | [`255_filtros_digitales/Convolution_2_/`](255_filtros_digitales/Convolution_2_/) | [docs/25.2](docs/25_2_convolucion.md) |
+| 25.3 | DSP — Filtros FIR e IIR | [`255_filtros_digitales/FIR_IIR_3_/`](255_filtros_digitales/FIR_IIR_3_/) | [docs/25.3](docs/25_3_fir_iir.md) |
 
 ---
 
@@ -121,6 +140,9 @@ CONTROL_BDC/
   - Control System Toolbox
   - Signal Processing Toolbox
 - **Simulink** ≥ R2024b para los modelos `*.slx`.
+- **Python** ≥ 3.9 (solo para los ejemplos DSP de la sección 25):
+  - `numpy`, `matplotlib`, `scipy`
+  - Instalación rápida: `pip install numpy matplotlib scipy`
 
 ---
 

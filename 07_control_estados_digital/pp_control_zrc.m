@@ -12,6 +12,18 @@
 % Salidas    : K_z, K_dc, polos LC en z, figura con respuesta al escalón
 %              + esfuerzo de control + plano z.
 % Doc        : docs/07_control_estados_digital.md
+% -------------------------------------------------------------------------
+% LEYENDA DE IMPLEMENTACIÓN
+%   [PC]  : se ejecuta off-line en MATLAB (diseño/sintonía/validación).
+%   [MCU] : pertenece al algoritmo que corre en el microcontrolador a
+%           cada interrupción de muestreo (cada Ts segundos).
+%
+% Constantes [PC] que se compilan dentro del [MCU]: Kz (1x3) y Kdc.
+% En cada ISR el microcontrolador ejecuta:
+%   [MCU]  x[k] = leer_estados();                 % (ia, w, theta)
+%   [MCU]  u[k] = -Kz*x[k] + Kdc*r[k];            % ley de control
+%   [MCU]  u[k] = saturar(u[k], Umin, Umax);
+%   [MCU]  aplicar_PWM(u[k]);
 % =========================================================================
 
 clear; clc; close all;
@@ -112,6 +124,7 @@ fprintf('Ganancia K_dc (Pre-comp)   : %.4f\n\n', K_dc);
 %% 6. SIMULACIÓN DIGITAL DINÁMICA
 % TRUCO DE PROFESOR: El tiempo de simulación se ajusta al 'tp'
 % Un sistema de 2do orden se asienta aprox en 4 o 5 veces el tp.
+% Cada iteración modela UNA interrupción de muestreo del [MCU].
 t_end = 4 * tp; 
 t_sim = 0:Ts:t_end;
 N = length(t_sim);
@@ -124,9 +137,9 @@ y_rad = zeros(1, N);
 u = zeros(1, N);
 
 for k = 1:N-1
-    y_rad(k) = Cd * x(:, k);
-    u(k) = -K_z * x(:, k) + K_dc * Referencia_rad(k);
-    x(:, k+1) = Ad * x(:, k) + Bd * u(k);
+    y_rad(k) = Cd * x(:, k);                                 % [MCU] lectura de sensores -> (ia, w, theta)
+    u(k) = -K_z * x(:, k) + K_dc * Referencia_rad(k);        % [MCU] ley de control u = -Kz*x + Kdc*r
+    x(:, k+1) = Ad * x(:, k) + Bd * u(k);                    % [PC]  modelo del motor (en HW lo hace la planta física)
 end
 y_rad(N) = Cd * x(:, N);
 u(N) = -K_z * x(:, N) + K_dc * Referencia_rad(N);

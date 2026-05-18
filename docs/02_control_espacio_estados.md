@@ -93,7 +93,7 @@ $$ A = \begin{bmatrix} -1 & -0.02 & 0 \\ 1 & -10 & 0 \\ 0 & 1 & 0 \end{bmatrix},
 
 Ejecutando `K = place(A, B, [s1 s2 s3])` se obtiene aproximadamente
 
-$$ K \approx [\,50.9,\;\ 4.11 \times 10^3,\;\ 4.30 \times 10^4\,] $$
+$$ K \approx [\50.9 \ \ 4.11 \times 10^3 \ \ 4.30 \times 10^4\] $$
 
 y $K_{dc} \approx 4.30 \times 10^4$ (coincide con $K_3$ porque la salida es directamente el estado 3).
 
