@@ -36,7 +36,7 @@ El hilo conductor es el **diseño y validación de controladores digitales** (PI
 
 ## Estructura del Repositorio
 
-```
+```text
 CONTROL_BDC/
 ├── README.md                            ← este archivo
 ├── .gitignore
@@ -101,8 +101,8 @@ CONTROL_BDC/
 ## Modelo de la Planta
 
 - **Sección 01 — Modelado introductorio:** modelo de **2×2** con estados $x = [i_a,\,\omega]^T$ (corriente y velocidad). Parámetros didácticos: $R_a = 0{,}5\,\Omega$, $L_a = 0{,}5\,\text{H}$, $K = 0{,}01$, $J_e = 0{,}01\,\text{kg·m}^2$, $B_e = 0{,}1\,\text{N·m·s}$.
-- **Secciones 02 → 07:** se extiende a **3×3** agregando $x_3 = \theta$ con $\dot{x}_3 = \omega$. **La salida controlada es la posición angular del eje** ($C = [0\;0\;1]$).
-- **Parámetros del motor real** usados en las secciones 05, 06 y 07:
+- **Secciones 02 → 09:** se extiende a **3×3** agregando $x_3 = \theta$ con $\dot{x}_3 = \omega$. **La salida controlada es la posición angular del eje** ($C = [0\;0\;1]$).
+- **Parámetros del motor real** usados en las secciones 05–09:
 
 | Símbolo | Descripción | Valor |
 |---------|-------------|-------|

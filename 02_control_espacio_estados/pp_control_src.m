@@ -10,7 +10,7 @@ clear; clc; close all;
 %% 1. ESPECIFICACIONES DE DISEÑO (Para el comportamiento dominante)
 disp('--- 1. Especificaciones de Diseño ---');
 Mp = 0.40;  % Sobreimpulso máximo (40%)
-tp = 0.1;   % Tiempo pico deseado (s)
+tp = 2;   % Tiempo pico deseado (s)
 
 zeta = -log(Mp) / sqrt(pi^2 + (log(Mp))^2);
 wn = pi / (tp * sqrt(1 - zeta^2));
@@ -88,28 +88,43 @@ sys_cl_final = ss(A_cl, B*K_dc, C, D);
 G_ideal = tf(wn^2, [1, 2*zeta*wn, wn^2]);
 
 %% 6. GRÁFICOS
-figure('Name', 'Control de Posición Motor DC', 'Position', [100, 100, 900, 400]);
+% Horizonte temporal adaptativo a las especificaciones (Mp, tp):
+% - Cubre ~3 tiempos de asentamiento del 2 % ( Ts2% ≈ 4/(zeta*wn) ) y al
+%   menos 2.5*tp para que el pico y el régimen permanente sean visibles.
+% - El paso dt se elige para tener ~1000 muestras en la ventana.
+Ts_set = 4 / (zeta*wn);                  % tiempo de asentamiento aprox.
+Tend   = max(2.5*tp, 3*Ts_set);          % horizonte de simulación
+dt     = Tend / 1000;                    % resolución temporal
+
+figure('Name', sprintf('Control de Posición Motor DC (Mp=%.0f%%, tp=%.2fs)', Mp*100, tp), ...
+       'Position', [100, 100, 900, 400]);
 
 % Gráfico 1: Respuesta al Escalón
 subplot(1,2,1);
-step(G_ideal, 'k--', 0.5); hold on;
-step(sys_cl_final, 'b-', 0.5);     
+step(G_ideal, 'k--', Tend); hold on;
+step(sys_cl_final, 'b-', Tend);
 title('Seguimiento de Posición Angular (\theta)');
 legend('2do Orden Ideal', 'Motor 3x3 Controlado', 'Location', 'SouthEast');
 xlabel('Tiempo (s)'); ylabel('Posición Angular (rad)');
+xlim([0 Tend]);
 grid on;
 
 % Gráfico 2: Esfuerzo de Control (Voltaje aplicado)
 % ¿Qué voltaje le estamos exigiendo al motor? Es vital para un ingeniero saberlo.
 % u(t) = -K*x(t) + K_dc*r(t). Simularemos la entrada de referencia y calcularemos 'u'
 subplot(1,2,2);
-t = 0:0.001:0.5;
+t = 0:dt:Tend;
 r = ones(size(t)); % Escalón unitario de referencia
 [y, t, x] = lsim(sys_cl_final, r, t); % Simulamos para obtener los estados 'x' en el tiempo
 u = -x*K' + K_dc*r'; % Ley de control
 plot(t, u, 'r', 'LineWidth', 1.5);
 title('Esfuerzo de Control (Voltaje V_a)');
 xlabel('Tiempo (s)'); ylabel('Voltaje (V)');
+xlim([0 Tend]);
+% Margen vertical del 10 % alrededor del rango observado de u(t)
+u_min = min(u); u_max = max(u);
+u_pad = 0.10 * max(abs(u_max - u_min), eps);
+ylim([u_min - u_pad, u_max + u_pad]);
 grid on;
 
 %% 7. RESULTADOS NUMÉRICOS

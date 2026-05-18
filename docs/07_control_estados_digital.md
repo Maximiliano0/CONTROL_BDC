@@ -92,6 +92,6 @@ $$ K_z \approx [\,0{,}06,\;\; 0{,}25,\;\; 6{,}8\,] $$
 
 y $K_{dc}$ del orden de $6{,}8$ (cercana a $K_{z,3}$ porque la salida coincide con el tercer estado). El voltaje pico simulado queda dentro de los $\pm 24\,$V → **no satura**, lo que valida la elección de $t_p = 1\,$s para esta planta. Si se baja a $t_p = 0{,}1\,$s las ganancias crecen $\sim 100\times$ y el voltaje pico requerido excede largamente la saturación.
 
-## 7.11 Sampling pathológico
+## 7.11 Muestreo patológico
 
 El par discreto $(\Phi, \Gamma)$ deja de ser controlable cuando $T_s$ coincide exactamente con un múltiplo del periodo de un modo oscilatorio. Para una planta con polos puramente imaginarios $\pm j\omega_0$, se pierde controlabilidad si $T_s = k\pi/\omega_0$. El motor BDC no presenta modos oscilatorios puros (su par de polos complejos siempre tiene parte real negativa), por lo que el problema no aparece en este curso, pero es importante recordarlo en sistemas resonantes (motores con flexibilidades, brazos robóticos largos, etc.).

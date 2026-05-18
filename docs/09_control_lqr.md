@@ -106,7 +106,7 @@ Para el motor BDC, valores razonables:
 |----------|--------------------------|------|
 | $i_{a,\max}$ | 5 A | $1/25$ |
 | $\omega_{\max}$ | 200 rad/s | $1/40\,000$ |
-| $\theta_{\max}$ | $\sim 20°$ ($0{,}35$ rad) | $1/0{,}12$ |
+| $\theta_{\max}$ | $\sim 20°$ ($0{,}349$ rad) | $1/0{,}122$ |
 | $u_{\max}$ | 24 V | $1/576$ |
 
 A partir de esta línea base se afina iterativamente:
@@ -137,7 +137,7 @@ En este capítulo usamos la opción 1 para alinearnos con la metodología del ca
 |---------|--------------------------|----------------|
 | Especificación | Polos deseados | Pesos $Q$, $R$ |
 | Esfuerzo de control | No se considera explícitamente | Penalizado en $J$ |
-| Garantía de estabilidad | Sí, si los polos están en $|z|<1$ | Sí, automática |
+| Garantía de estabilidad | Sí, si los polos están en $\|z\|<1$ | Sí, automática |
 | Robustez | Variable | Margen de ganancia $[\tfrac{1}{2},\infty)$, margen de fase $\ge 60°$ (en continuo; en discreto se conservan propiedades similares con $T_s$ chico) |
 | Escalabilidad MIMO | Requiere `place` cuidadoso | `dlqr` resuelve directamente |
 
@@ -191,15 +191,15 @@ Por consola se reportan $M_p$, $t_p$, $|u|_{\max}$ y $J_\infty$ de cada estrateg
 
 ## 9.12 Ejemplo numérico (sintonizado base Bryson)
 
-Con los parámetros del motor real, $T_s = 10\,$ms y los topes de Bryson del script ($i_{a,\max}=5$ A, $\omega_{\max}=100$ rad/s, $\theta_{\max}=20$ rad, $u_{\max}=24$ V):
+Con los parámetros del motor real, $T_s = 10\,$ms y los topes de Bryson del script ($i_{a,\max}=5$ A, $\omega_{\max}=200$ rad/s, $\theta_{\max}=20° \approx 0{,}349$ rad, $u_{\max}=24$ V):
 
-$$ Q = \mathrm{diag}\bigl(1/25,\; 1/10^4,\; 1/400\bigr),\qquad R = 1/576. $$
+$$ Q = \mathrm{diag}\bigl(1/25,\; 1/40\,000,\; 1/0{,}122\bigr),\qquad R = 1/576. $$
 
-`dlqr` arroja típicamente $K$ del orden de:
+`dlqr` arroja un $K$ con **tercera componente dominante** (la penalización relativa sobre $\theta$ es la mayor de las tres en $Q$):
 
-$$ K_{\text{LQR}} \approx [\,0{,}03,\;\; 0{,}15,\;\; 2{,}2\,] $$
+$$ K_{\text{LQR}} \approx [\,k_1,\;\; k_2,\;\; k_3\,],\qquad |k_3| \gg |k_2| > |k_1|, $$
 
-y autovalores en lazo cerrado todos dentro del círculo unitario con magnitud $\sim 0{,}97$–0{,}99 (es decir, dinámica un poco más lenta y mucho más suave que la del pole-placement del cap. 07, que tenía magnitudes similares pero parte imaginaria mayor).
+con autovalores en lazo cerrado todos dentro del círculo unitario (estabilidad garantizada por construcción). El script imprime los valores exactos por consola.
 
 ### Márgenes de robustez
 
@@ -207,11 +207,11 @@ Una propiedad clásica del LQR continuo es **margen de ganancia infinito superio
 
 ### Comparación cuantitativa con los cuatro ajustes del script
 
-| Ajuste | $Q_{33}$ | $R$ | $\|K\|$ aprox. | Comportamiento esperado |
-|--------|----------|-----|----------------|-------------------------|
-| Bryson | $1/400$ | $1/576$ | $\sim 2{,}2$ | Equilibrio referencia. |
-| Rápido ($Q_{33}\!\times\!100$) | $1/4$ | $1/576$ | $\sim 8$ | Sube agresivamente, riesgo de saturar. |
-| Suave ($R\!\times\!100$) | $1/400$ | $0{,}174$ | $\sim 0{,}5$ | Voltaje muy bajo, tiempo de subida largo. |
-| Equivalente PP | — | — | $\sim K_{\text{PP}}$ del cap. 07 | Coincide con el resultado del capítulo previo. |
+| Ajuste | $Q_{33}$ | $R$ | Comportamiento esperado |
+|--------|----------|-----|-------------------------|
+| Bryson | $1/0{,}122$ | $1/576$ | Equilibrio referencia. |
+| Rápido ($Q_{33}\!\times\!100$) | $100/0{,}122$ | $1/576$ | Sube agresivamente, riesgo de saturar. |
+| Suave ($R\!\times\!100$) | $1/0{,}122$ | $100/576$ | Voltaje muy bajo, tiempo de subida largo. |
+| Equivalente PP | — | — | Coincide con el resultado del capítulo previo. |
 
 El costo acumulado $J(t) = \sum_{k=0}^{N} x^T Q x + u^T R u$ que grafica el script confirma que **el sintonizado base de Bryson minimiza $J$** — los otros tres son peores en $J$ por construcción del problema, aunque puedan ser mejores en métricas no incluidas en $Q,R$ (sobreimpulso, slew rate, etc.).

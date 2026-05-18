@@ -4,7 +4,7 @@
 
 Un sistema de control digital reemplaza el bloque continuo por:
 
-```
+```text
 r(t) → [ADC]→ r[k] → [μC: G_c(z)] → u[k] → [DAC/ZOH] → u(t) → planta G(s) → y(t) → [ADC]→ y[k]
 ```
 

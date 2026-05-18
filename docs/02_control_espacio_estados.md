@@ -58,7 +58,7 @@ Aunque la planta tiene un integrador natural en $\theta$, al cerrar el lazo con 
 
 $$ K_{dc} = \frac{1}{\mathrm{dcgain}\!\left( C(sI-(A-BK))^{-1}B \right)} $$
 
-de modo que para una referencia escalon $r=1$ se obtenga $\theta_\infty = 1$.
+de modo que para una referencia escalón $r=1$ se obtenga $\theta_\infty = 1$.
 
 ### Derivación por teorema del valor final
 
@@ -106,6 +106,6 @@ y $K_{dc} \approx 4{,}30\!\times\!10^4$ (coincide con $K_3$ porque la salida es 
 
 ### Lectura ingenieril del resultado
 
-- $K_1$ pequeno: la corriente apenas necesita ser corregida (la planta eléctrica es ya estable y rápida).
+- $K_1$ pequeño: la corriente apenas necesita ser corregida (la planta eléctrica es ya estable y rápida).
 - $K_2$ y $K_3$ grandes: la mayor parte de la ley de control se basa en velocidad y posición, lo cual es esperable cuando el objetivo es regular $\theta$.
 - El pico de $u(t)$ resultante supera 100 V (ver gráfico) → con un puente H de $\pm 24\,$V este diseño **saturaría**. Justamente esa es la motivación del capítulo 06.
