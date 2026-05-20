@@ -32,9 +32,8 @@ disp('   Diseño PID Discreto: Efecto del Windup y Solución Anti-Windup        
 disp('=========================================================================');
 
 %% 1. PARÁMETROS CONFIGURABLES POR EL USUARIO
-% ¡Modifica estos valores para ver cómo se ajusta todo automáticamente!
-Mp = 0.3;          % Sobreimpulso deseado (Ej: 0.30 = 30%)
-tp = 5;            % Tiempo pico deseado (s)
+Mp = 0.6;          % Sobreimpulso deseado (Ej: 0.60 = 60%)
+tp = 3;            % Tiempo pico deseado (s)
 Escalon_Ref = 10;  % Magnitud de la referencia de posición (rad)
 
 fprintf('>>> Configuración Actual: tp = %.2f s | Mp = %.0f%% <<<\n\n', tp, Mp*100);
@@ -52,16 +51,36 @@ A = [-Ra/La, -Kb/La, 0 ; Kb/Je, -Be/Je, 0 ; 0, 1, 0];
 B = [1/La ; 0 ; 0]; C = [0, 0, 1]; D = 0;
 sys_planta_s = ss(A, B, C, D);
 
-Ts = 0.001; % Muestreo a 1ms (>> que constante eléctrica tau_e = La/Ra ~ 0.7ms)
+% Ts = 5 ms: sigue siendo >> tau_e (La/Ra ≈ 0.7 ms) y reduce 5× el costo
+% del bucle escalar (N pasa de 240 k a 48 k para T_end = 80*tp).
+Ts = 0.005;
 sys_planta_z = c2d(sys_planta_s, Ts, 'zoh');
 
 % Sintonización automática con pidtune fijando wn como ancho de banda objetivo
 % y PM_deg como margen de fase requerido (ver doc cap. 05).
 opts = pidtuneOptions('PhaseMargin', PM_deg, 'DesignFocus', 'reference-tracking');
-C_z = pidtune(sys_planta_z, 'PIDF', wn, opts);
+ctrl = 'PIDF';
+C_z = pidtune(sys_planta_z, ctrl, wn, opts);
 
-Kp = C_z.Kp; Ki = C_z.Ki; Kd = C_z.Kd; Tf = C_z.Tf; 
-disp('--- Parámetros del PID Sintonizado ---');
+% Extracción robusta: pidtune puede devolver objetos pid/pid2/pidstd con
+% sólo el subconjunto de ganancias que aplica al tipo solicitado (p.ej. 'P'
+% no tiene Ki/Kd/Tf, 'PI' no tiene Kd/Tf, 'PID' no tiene Tf, etc.). Las
+% ganancias ausentes se ponen explícitamente en 0 para que el bucle PID
+% (up + ui + ud con derivador filtrado) siga funcionando sin tocarse.
+% Nota: `isprop` no funciona bien con objetos pid (sobrecarga de '()'),
+% así que comparamos contra la lista devuelta por `properties`.
+props = properties(C_z);
+Kp = 0; Ki = 0; Kd = 0; Tf = 0;
+if any(strcmp(props, 'Kp')), Kp = C_z.Kp; end
+if any(strcmp(props, 'Ki')), Ki = C_z.Ki; end
+if any(strcmp(props, 'Kd')), Kd = C_z.Kd; end
+if any(strcmp(props, 'Tf')), Tf = C_z.Tf; end
+
+% Tf = 0 haría que (Tf+Ts) = Ts (válido) pero a_d = 0: el derivador queda
+% como diferencia simple Kd*(e[k]-e[k-1])/Ts. Si además Kd = 0, la rama
+% derivativa queda inactiva. Sin riesgo de división por cero.
+
+disp(['--- Parámetros del Controlador Sintonizado (' ctrl ') ---']);
 fprintf('Kp: %.4f | Ki: %.4f | Kd: %.4f | Tf: %.5f\n', Kp, Ki, Kd, Tf);
 
 %% 3. CONFIGURACIÓN DINÁMICA DE LA SIMULACIÓN
@@ -73,10 +92,18 @@ V_min = -24;
 % Heurística simple: Kaw = Kp/10  (ver Eq. de descarga del integrador,
 % sec 6.3 del .md). Constante de tiempo de descarga T_aw = 1/Kaw.
 % Alternativa: Kaw = sqrt(Ki*Kd) (media geométrica de T_i, T_d).
-Kaw = Kp/10; 
+if Ki == 0
+    Kaw = 0;
+else
+    Kaw = Kp/10;
+end 
 
 % Horizonte de simulación automático
-T_end = 8 * tp; 
+% Nota: usamos 80*tp (no 8*tp) porque la planta tiene constante mecánica
+% Je/Be ≈ 75 s y la convergencia final del caso CON AW depende de la
+% acción integral residual; con horizontes cortos parecería haber error
+% estacionario cuando en realidad sólo es convergencia lenta.
+T_end = 80 * tp; 
 t_sim = 0:Ts:T_end; 
 N = length(t_sim);
 
@@ -90,6 +117,10 @@ ui_no_aw = 0; ud_no_aw = 0; e_prev_no_aw = 0; ui_hist_no_aw = zeros(1, N);
 
 x_aw = zeros(3, N); y_aw = zeros(1, N); u_aw = zeros(1, N); u_calc_aw = zeros(1, N);  
 ui_aw = 0; ud_aw = 0; e_prev_aw = 0; ui_hist_aw = zeros(1, N); 
+
+% Coeficientes precalculados del derivador filtrado (constantes en el bucle)
+a_d = Tf / (Tf + Ts);
+b_d = Kd / (Tf + Ts);
 
 %% 4. BUCLE DE SIMULACIÓN NO LINEAL
 % Cada iteración del bucle equivale a UNA interrupción de muestreo del
@@ -105,7 +136,7 @@ for k = 1:N-1
     
     up_no_aw = Kp * error_no_aw;                                            % [MCU] rama proporcional
     ui_no_aw = ui_no_aw + Ki * Ts * error_no_aw;                            % [MCU] integración (acumulador)
-    ud_no_aw = (Tf / (Tf + Ts)) * ud_no_aw + (Kd / (Tf + Ts)) * (error_no_aw - e_prev_no_aw);  % [MCU] derivador filtrado
+    ud_no_aw = a_d * ud_no_aw + b_d * (error_no_aw - e_prev_no_aw);         % [MCU] derivador filtrado
     e_prev_no_aw = error_no_aw;                                             % [MCU] guardar e[k-1]
     
     v_calc_no = up_no_aw + ui_no_aw + ud_no_aw;                             % [MCU] señal pedida por el PID
@@ -123,9 +154,10 @@ for k = 1:N-1
     error_aw = Referencia(k) - y_aw(k);                                     % [MCU]
     
     up_aw = Kp * error_aw;                                                  % [MCU]
-    ud_aw = (Tf / (Tf + Ts)) * ud_aw + (Kd / (Tf + Ts)) * (error_aw - e_prev_aw); % [MCU]
+    ud_aw = a_d * ud_aw + b_d * (error_aw - e_prev_aw);                     % [MCU]
+    ui_aw = ui_aw + Ki * Ts * error_aw;                                     % [MCU]
     e_prev_aw = error_aw;                                                   % [MCU]
-    
+  
     v_calc = up_aw + ui_aw + ud_aw;                                         % [MCU] señal pedida
     u_calc_aw(k) = v_calc;
     
@@ -135,7 +167,7 @@ for k = 1:N-1
     % Diferencia entre lo entregado y lo pedido: NEGATIVA cuando satura por arriba
     % -> resta del integrador, descargándolo (anti-windup)
     error_aw_term = v_sat - v_calc;                                         % [MCU] término de back-calculation
-    ui_aw = ui_aw + Ki * Ts * error_aw + Kaw * Ts * error_aw_term;          % [MCU] integrador con anti-windup
+    ui_aw = ui_aw + Kaw * Ts * error_aw_term;                               % [MCU] integrador con anti-windup
     
     ui_hist_aw(k) = ui_aw;                                                  % [PC]  logging
     x_aw(:, k+1) = Phi * x_aw(:, k) + Gamma * u_aw(k);                      % [PC]  modelo del motor
@@ -146,35 +178,73 @@ y_no_aw(N) = C_mat * x_no_aw(:, N); y_aw(N) = C_mat * x_aw(:, N);
 ui_hist_no_aw(N) = ui_hist_no_aw(N-1); ui_hist_aw(N) = ui_hist_aw(N-1);
 u_calc_no_aw(N) = u_calc_no_aw(N-1); 
 
-%% 5. ANÁLISIS GRÁFICO AUTO-AJUSTABLE
-fig = figure('Name', sprintf('Saturación y AW (tp = %.2fs)', tp), 'Position', [50, 50, 1000, 850], 'Color', 'w');
+%% 5. ANÁLISIS GRÁFICO
+% Decimación para graficar: ~5000 puntos por traza es más que suficiente
+% visualmente y evita que MATLAB renderice cientos de miles de vértices.
+MAX_PTS = 5000;
+dec = max(1, floor(N / MAX_PTS));
+idx = 1:dec:N;
+tp_plot       = t_sim(idx);
+Ref_p         = Referencia(idx);
+y_no_aw_p     = y_no_aw(idx);
+y_aw_p        = y_aw(idx);
+u_no_aw_p     = u_no_aw(idx);
+u_aw_p        = u_aw(idx);
+u_calc_no_p   = u_calc_no_aw(idx);
+ui_hist_no_p  = ui_hist_no_aw(idx);
+ui_hist_aw_p  = ui_hist_aw(idx);
+
+fig = figure('Name', sprintf('Saturación y AW (tp = %.2fs, Mp = %.0f%%)', tp, Mp*100), 'Position', [50, 50, 1000, 850], 'Color', 'w');
+
+% --- VENTANA DE VISUALIZACIÓN ADAPTATIVA -------------------------------
+% El bucle simula hasta T_end = 80*tp para que el caso CON AW cierre el
+% último tramo vía integral lenta, pero el transitorio de interés
+% (saturación y windup) ocurre en los primeros ~10*tp. Hacemos zoom
+% automático a esa ventana.
+x_zoom = min(T_end, max(10*tp, 4));     % al menos 4 s o 10*tp
+x_zoom = min(T_end, max(10*tp, 4));     % al menos 4 s o 10*tp
+
+% Límites Y de posición: usan AMBAS trayectorias y son simétricos al signo
+% de la referencia para soportar Escalon_Ref negativo. Margen proporcional
+% al sobreimpulso teórico Mp para que un Mp pequeño no aplaste el gráfico
+% y un Mp grande no recorte el pico.
+y_min_data = min([0, Escalon_Ref, min(y_no_aw), min(y_aw)]);
+y_max_data = max([0, Escalon_Ref, max(y_no_aw), max(y_aw)]);
+y_margin   = max(0.05*abs(Escalon_Ref), 0.5*Mp*abs(Escalon_Ref));
+y_lim_pos  = [y_min_data - y_margin, y_max_data + y_margin];
 
 % --- GRÁFICO 1: POSICIÓN ---
 ax1 = subplot(3,1,1);
-plot(t_sim, Referencia, 'k--', 'LineWidth', 2); hold on;
-plot(t_sim, y_no_aw, 'Color', [0.85 0.33 0.10], 'LineWidth', 2.5); 
-plot(t_sim, y_aw, 'Color', [0 0.45 0.74], 'LineWidth', 2.5);       
-title(sprintf('1. Salida: Posición Angular (Objetivo tp = %.2f s)', tp), 'FontSize', 13, 'FontWeight', 'bold');
+plot(tp_plot, Ref_p, 'k--', 'LineWidth', 2); hold on;
+% Banda de tolerancia ±5 % alrededor de la referencia (criterio de asentamiento)
+band = 0.05 * abs(Escalon_Ref);
+patch([tp_plot fliplr(tp_plot)], ...
+      [Ref_p+band fliplr(Ref_p-band)], ...
+      [0.6 0.8 0.6], 'EdgeColor','none', 'FaceAlpha',0.15, 'HandleVisibility','off');
+plot(tp_plot, y_no_aw_p, 'Color', [0.85 0.33 0.10], 'LineWidth', 2.5); 
+plot(tp_plot, y_aw_p, 'Color', [0 0.45 0.74], 'LineWidth', 2.5);       
+title(sprintf('1. Salida: Posición Angular (tp = %.2f s, Mp = %.0f%%, ref = %g rad)', tp, Mp*100, Escalon_Ref), 'FontSize', 13, 'FontWeight', 'bold');
 ylabel('Posición (rad)', 'FontSize', 11, 'FontWeight', 'bold');
 legend('Referencia', 'PID Clásico (Con Windup)', 'PID con Anti-Windup', 'Location', 'SouthEast', 'FontSize', 11);
 grid on; ax1.GridAlpha = 0.3;
 xline(tp, 'm:', 'tp Teórico', 'LabelVerticalAlignment', 'bottom', 'LineWidth', 1.5, 'HandleVisibility','off');
-ylim([0, Escalon_Ref + max(abs(y_no_aw - Escalon_Ref))*1.1]);
+ylim(y_lim_pos);
 
 % --- GRÁFICO 2: ESFUERZO DE CONTROL (VOLTAJE) ---
 ax2 = subplot(3,1,2);
 
-% LÓGICA DE LÍMITES SÚPER ROBUSTA (A prueba de Derivative Kick)
-% Garantizamos que min_v_plot SIEMPRE sea menor estricto que max_v_plot
+% Límites del eje Y robustos al derivative kick (que dispara u_calc lejos
+% del rango de saturación). Se acotan a 4*V_sat para evitar que un pico
+% numérico aplaste visualmente el resto de la traza.
 max_v_plot = max([V_max + 5, min(max(u_calc_no_aw) + 5, V_max * 4)]);
 min_v_plot = min([V_min - 5, max(min(u_calc_no_aw) - 5, V_min * 4)]);
 
 patch([0 T_end T_end 0], [V_max V_max max_v_plot max_v_plot], [0.85 0.85 0.85], 'EdgeColor', 'none', 'FaceAlpha', 0.5, 'HandleVisibility', 'off'); hold on;
 patch([0 T_end T_end 0], [V_min V_min min_v_plot min_v_plot], [0.85 0.85 0.85], 'EdgeColor', 'none', 'FaceAlpha', 0.5, 'HandleVisibility', 'off'); hold on;
 
-plot(t_sim, u_calc_no_aw, ':', 'Color', [0.85 0.33 0.10], 'LineWidth', 1.5); 
-plot(t_sim, u_no_aw, '-', 'Color', [0.85 0.33 0.10], 'LineWidth', 3);        
-plot(t_sim, u_aw, '-', 'Color', [0 0.45 0.74], 'LineWidth', 2);              
+plot(tp_plot, u_calc_no_p, ':', 'Color', [0.85 0.33 0.10], 'LineWidth', 1.5); 
+plot(tp_plot, u_no_aw_p, '-', 'Color', [0.85 0.33 0.10], 'LineWidth', 3);        
+plot(tp_plot, u_aw_p, '-', 'Color', [0 0.45 0.74], 'LineWidth', 2);              
 
 yline(V_max, 'k-', 'Límite (+24V)', 'LabelHorizontalAlignment', 'left', 'LineWidth', 2, 'HandleVisibility', 'off');
 yline(V_min, 'k-', 'Límite (-24V)', 'LabelHorizontalAlignment', 'left', 'LineWidth', 2, 'HandleVisibility', 'off');
@@ -185,13 +255,13 @@ ylabel('Voltaje (V)', 'FontSize', 11, 'FontWeight', 'bold');
 legend('PID pide', 'Real Saturado', 'Real PID + AW', 'Location', 'NorthEast', 'FontSize', 11);
 grid on; ax2.GridAlpha = 0.3;
 
-% --- GRÁFICO 3: EL "CULPABLE" (MEMORIA INTEGRAL) ---
+% --- GRÁFICO 3: MEMORIA DEL ACUMULADOR INTEGRAL ---
 ax3 = subplot(3,1,3);
-plot(t_sim, ui_hist_no_aw, 'Color', [0.85 0.33 0.10], 'LineWidth', 2.5); hold on;
-plot(t_sim, ui_hist_aw, 'Color', [0 0.45 0.74], 'LineWidth', 2.5);
+plot(tp_plot, ui_hist_no_p, 'Color', [0.85 0.33 0.10], 'LineWidth', 2.5); hold on;
+plot(tp_plot, ui_hist_aw_p, 'Color', [0 0.45 0.74], 'LineWidth', 2.5);
 yline(0, 'k-', 'HandleVisibility', 'off');
 
-fill([t_sim fliplr(t_sim)], [ui_hist_no_aw fliplr(ui_hist_aw)], [0.85 0.33 0.10], 'FaceAlpha', 0.1, 'EdgeColor', 'none', 'HandleVisibility', 'off');
+fill([tp_plot fliplr(tp_plot)], [ui_hist_no_p fliplr(ui_hist_aw_p)], [0.85 0.33 0.10], 'FaceAlpha', 0.1, 'EdgeColor', 'none', 'HandleVisibility', 'off');
 
 title('3. Diagnóstico: Memoria del Acumulador Integral (u_i)', 'FontSize', 13, 'FontWeight', 'bold');
 xlabel('Tiempo (s)', 'FontSize', 12, 'FontWeight', 'bold');
@@ -199,6 +269,6 @@ ylabel('Esfuerzo Integral', 'FontSize', 11, 'FontWeight', 'bold');
 legend('Windup', 'Anti-Windup', 'Location', 'NorthEast', 'FontSize', 11);
 grid on; ax3.GridAlpha = 0.3;
 
-% ENLACE DE EJES X (Zoom dinámico para la clase)
+% Eje X enlazado entre los tres subplots
 linkaxes([ax1, ax2, ax3], 'x');
-xlim([0, T_end]);
+xlim([0, x_zoom]);
