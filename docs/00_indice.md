@@ -16,6 +16,7 @@ Planta de referencia: **Motor BDC (Brushed DC Motor)**
 | 7 | Asignación de polos en Z — control digital de estados (3×3 — posición) | [07_control_estados_digital.md](07_control_estados_digital.md) |
 | 8 | Observador de estados (Luenberger) en Z (3×3 — posición) | [08_observador_estados.md](08_observador_estados.md) |
 | 9 | Control LQR discreto (cuadrático óptimo) (3×3 — posición) | [09_control_lqr.md](09_control_lqr.md) |
+| 24 | Implementación Arduino PID y protocolo de pruebas de banco | [24_arduino_pid_banco.md](24_arduino_pid_banco.md) |
 | 25.1 | Filtros digitales — Ventaneo (Windowing) | [25_1_windowing.md](25_1_windowing.md) |
 | 25.2 | Filtros digitales — Convolución discreta | [25_2_convolucion.md](25_2_convolucion.md) |
 | 25.3 | Filtros digitales — FIR e IIR | [25_3_fir_iir.md](25_3_fir_iir.md) |

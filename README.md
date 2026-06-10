@@ -32,6 +32,8 @@ Este repositorio reúne todos los recursos utilizados para dictar el curso, orga
 
 El hilo conductor es el **diseño y validación de controladores digitales** (PID, asignación de polos en espacio de estados, anti-windup) sobre un motor BDC. **A partir de la sección 02 se utiliza el modelo de estados 3×3 del motor y se controla la posición angular del eje (θ).**
 
+Además, el repositorio incluye una **implementación embebida en Arduino** del PID digital de posición con anti-windup para banco real en 12 V.
+
 ---
 
 ## Estructura del Repositorio
@@ -81,7 +83,11 @@ CONTROL_BDC/
 │   └── obs_control_z.m
 ├── 09_control_lqr/                      ← Control LQR discreto (3×3 posición)
 │   └── lqr_bdc_z.m
-└── 255_filtros_digitales/                ← Complemento DSP en Python (filtrado de sensores)
+├── 24_arduino_example/                  ← Implementación embebida Arduino (PID + AW)
+│   ├── README.md
+│   └── arduino_pid/
+│       └── arduino_pid.ino
+└── 25_filtros_digitales/                ← Complemento DSP en Python (filtrado de sensores)
     ├── Windowing_1_/                     ← 25.1 Ventaneo y leakage espectral
     │   ├── signal_test.py
     │   ├── windowing.py
@@ -111,9 +117,10 @@ CONTROL_BDC/
 | 7 | Asignación de polos en Z (control digital de estados) | [`07_control_estados_digital/`](07_control_estados_digital/) | [docs/07](docs/07_control_estados_digital.md) |
 | 8 | Observador de estados (Luenberger) en Z | [`08_observador_estados/`](08_observador_estados/) | [docs/08](docs/08_observador_estados.md) |
 | 9 | Control LQR discreto (cuadrático óptimo) | [`09_control_lqr/`](09_control_lqr/) | [docs/09](docs/09_control_lqr.md) |
-| 25.1 | DSP — Ventaneo (windowing) y leakage espectral | [`255_filtros_digitales/Windowing_1_/`](255_filtros_digitales/Windowing_1_/) | [docs/25.1](docs/25_1_windowing.md) |
-| 25.2 | DSP — Convolución discreta (FIR manual) | [`255_filtros_digitales/Convolution_2_/`](255_filtros_digitales/Convolution_2_/) | [docs/25.2](docs/25_2_convolucion.md) |
-| 25.3 | DSP — Filtros FIR e IIR | [`255_filtros_digitales/FIR_IIR_3_/`](255_filtros_digitales/FIR_IIR_3_/) | [docs/25.3](docs/25_3_fir_iir.md) |
+| 24 | Implementación embebida Arduino (PID + anti-windup) | [`24_arduino_example/`](24_arduino_example/) | [README 24](24_arduino_example/README.md) |
+| 25.1 | DSP — Ventaneo (windowing) y leakage espectral | [`25_filtros_digitales/Windowing_1_/`](25_filtros_digitales/Windowing_1_/) | [docs/25.1](docs/25_1_windowing.md) |
+| 25.2 | DSP — Convolución discreta (FIR manual) | [`25_filtros_digitales/Convolution_2_/`](25_filtros_digitales/Convolution_2_/) | [docs/25.2](docs/25_2_convolucion.md) |
+| 25.3 | DSP — Filtros FIR e IIR | [`25_filtros_digitales/FIR_IIR_3_/`](25_filtros_digitales/FIR_IIR_3_/) | [docs/25.3](docs/25_3_fir_iir.md) |
 
 ---
 
@@ -143,6 +150,9 @@ CONTROL_BDC/
 - **Python** ≥ 3.9 (solo para los ejemplos DSP de la sección 25):
   - `numpy`, `matplotlib`, `scipy`
   - Instalación rápida: `pip install numpy matplotlib scipy`
+- **Arduino IDE / Arduino CLI** (solo para `24_arduino_example/`):
+  - Board ejemplo: `arduino:avr:uno`
+  - Monitor serial: `115200 baudios`
 
 ---
 
@@ -152,6 +162,13 @@ CONTROL_BDC/
 % Ejemplo: control PID discreto del motor BDC
 cd('05_pid_digital')
 pid_bdc_z
+```
+
+```text
+# Ejemplo: implementación Arduino (IDE)
+Abrir: 24_arduino_example/arduino_pid/arduino_pid.ino
+Compilar para: arduino:avr:uno
+Subir y abrir monitor serial a 115200
 ```
 
 Cada script es **autónomo** (`clear; clc; close all` al inicio) y abre sus propias figuras. Los modelos Simulink se abren con doble clic o con `open_system('nombre.slx')`.
